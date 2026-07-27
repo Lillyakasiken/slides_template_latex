@@ -1,0 +1,37 @@
+\RequirePackage{uzhsetup}
+
+% Language of the fixed strings in the footer ("University of Zurich" vs.
+% "Universität Zürich"). The document body is English-only in this build; the
+% "german" option only switches the institution label.
+\DeclareOptionBeamer{german}{\let\uzh@language\uzh@de}
+\DeclareOptionBeamer{english}{\let\uzh@language\uzh@en}
+\ProcessOptionsBeamer
+
+\mode<presentation>
+
+\usefonttheme{uzh}
+\usecolortheme{uzh}
+\useinnertheme{uzh}
+
+% THU-style top navigation bar: section names + mini-frame progress dots.
+% smoothbars is loaded first so it installs the headline, then the UZH outer
+% theme is loaded on top to restore the corporate frametitle and footline.
+\useoutertheme[subsection=true]{smoothbars}
+\useoutertheme{uzh}
+
+% Recolor the navigation bar to the UZH corporate palette. These must be set
+% AFTER smoothbars is loaded, otherwise it overrides them with its defaults.
+\setbeamercolor{section in head/foot}{bg=uzh@blue,fg=white}
+\setbeamercolor{subsection in head/foot}{bg=uzh@blue1,fg=uzh@blue4}
+\setbeamercolor{mini frame}{parent=section in head/foot,fg=white,bg=uzh@blue}
+\setbeamerfont{section in head/foot}{series=\bfseries}
+% Subsection bar is only shown when a subsection is active (see the custom
+% headline in beamerouterthemeuzh.sty), so it can afford a slightly larger,
+% more legible font than the section bar's mini-frame row.
+\setbeamerfont{subsection in head/foot}{size=\footnotesize}
+
+% Automatic outline frames, TOC styling and block colors.
+\RequirePackage{uzhnavigation}
+
+\mode
+<all>

@@ -1,0 +1,223 @@
+\documentclass[aspectratio=169,onlytextwidth]{beamer}
+
+\usetheme[english]{uzh} % Institution label: english or german
+
+% Additional packages for the demo content
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{uzhcode} % UZH-styled source-code listings + \cmd / \env helpers
+
+% Bibliography item marker as [1], [2], ... (instead of the default icon)
+\setbeamertemplate{bibliography item}[text]
+
+\title{A Beamer Theme for the University of Zurich}
+\subtitle{THU-style features in the UZH corporate design}
+\author{Hans Muster}
+\date{\today}
+\institute{Department of XYZ}
+\titlegraphic{img/uzh-lake.jpg}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{Outline}
+  \setlength{\parskip}{\uzhtocparskip}
+  \tableofcontents
+\end{frame}
+
+
+\section{Introduction}
+
+\subsection{About this theme}
+
+\begin{frame}{What this theme gives you}
+  This template combines the \textbf{look} of the official UZH corporate-design
+  beamer theme with the \textbf{navigation features} of the popular THU beamer
+  theme.
+
+  \begin{itemize}
+    \item A section navigation bar with progress dots at the top of every slide
+    \item Automatic \emph{outline} slides at the start of each section
+    \item A footer showing the current slide and the total number of slides
+    \item Coloured blocks, code listings and math, all in the UZH palette
+  \end{itemize}
+
+  Everything is built on the standard \texttt{beamer} class~\cite{lamport1994latex},
+  so all usual commands and environments keep working.
+\end{frame}
+
+\begin{frame}{\steptitle{Building up a list step by step}}
+  \setsteps{3}
+  \stepnote{Reveal one point at a time with \texttt{steplist}: the current
+    point is black, earlier points fade to grey, and a final overlay shows the
+    whole slide in black to talk over as a summary.}
+
+  \begin{steplist}
+    \stepitem{First the motivation becomes visible \ldots}
+    \stepitem{\ldots then the method \ldots}
+    \stepitem{\ldots and finally the result.}
+  \end{steplist}
+
+  \stepsummary{Use \texttt{\textbackslash pause} or \texttt{[<+->]} for a plain
+    reveal.}
+\end{frame}
+
+\subsection{Colours}
+
+\begin{frame}{The UZH colour palette}
+  The corporate colours are available as commands and as named colours:
+
+  \begin{itemize}
+    \item \uzhblue{Blue} \quad \uzhcyan{Cyan} \quad \uzhapple{Apple}
+    \item \uzhgold{Gold} \quad \uzhorange{Orange} \quad \uzhberry{Berry}
+  \end{itemize}
+
+  Use \texttt{\textbackslash textcolor\{uzh@blue\}\{\ldots\}} or the shortcuts
+  \texttt{\textbackslash uzhblue\{\ldots\}} shown above. Shades 1--5 exist for
+  each colour (e.g. \texttt{uzh@blue1} \ldots\ \texttt{uzh@blue5}).
+\end{frame}
+
+
+\section{Content elements}
+
+\subsection{Blocks}
+
+\begin{frame}{Blocks}
+  \begin{block}{Definition}
+    A \emph{block} groups related content under a coloured title bar.
+  \end{block}
+
+  \begin{exampleblock}{Example}
+    Example blocks use the UZH apple colour.
+  \end{exampleblock}
+
+  \begin{alertblock}{Warning}
+    Alert blocks use the UZH berry colour to draw attention.
+  \end{alertblock}
+\end{frame}
+
+\subsection{Lists, columns and images}
+
+\begin{frame}{Text and a picture}
+  \begin{columns}
+    \begin{column}{0.62\textwidth}
+      Combine running text with images using \texttt{columns}. The
+      \texttt{\textbackslash fillimage} helper crops an image to exactly fill a
+      given width and height, so photos never look stretched.
+
+      \begin{enumerate}
+        \item Pick a width and a height
+        \item The image is centred and cropped to fit
+        \item Add an \texttt{alt} text for accessibility
+      \end{enumerate}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \fillimage[alt={A staircase at UZH}]{\textwidth}{6cm}{img/uzh-staircase.jpg}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Profile cards}
+  \begin{columns}
+    \begin{column}[T]{0.23\textwidth}
+      \imagecard{img/profile.pdf}{Martha Muster}{Professor}
+    \end{column}
+    \begin{column}[T]{0.23\textwidth}
+      \imagecard{img/profile.pdf}{Hans Muster}{Academic Associate}
+    \end{column}
+    \begin{column}[T]{0.23\textwidth}
+      \imagecard{img/profile.pdf}{Martha Muster}{PhD Student}
+    \end{column}
+    \begin{column}[T]{0.23\textwidth}
+      \imagecard{img/profile.pdf}{Hans Muster}{PhD Student}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\section{Typesetting}
+
+\subsection{Mathematics}
+
+\begin{frame}{Mathematics}
+  Inline math such as $\int_0^1 x^2 \, dx = \tfrac{1}{3}$ flows with the text.
+  Display math is centred:
+  \[
+    \sum_{i=1}^{n} i = \frac{n(n+1)}{2}.
+  \]
+
+  Aligned, numbered equations work as usual:
+  \begin{align}
+    Q_{\text{target}} &= r + \gamma\, Q^\pi\big(s', \pi_\theta(s') + \epsilon\big) \\
+    \epsilon &\sim \mathrm{clip}\big(\mathcal{N}(0,\sigma), -c, c\big) \nonumber
+  \end{align}
+\end{frame}
+
+\subsection{Tables and code}
+
+\begin{frame}{Tables}
+  Use \texttt{booktabs} for clean, professional tables:
+
+  \begin{table}
+    \centering
+    \begin{tabular}{lcc}
+      \toprule
+      Method & Accuracy & Runtime (ms) \\
+      \midrule
+      Baseline      & 0.812 & 14.2 \\
+      \textbf{Ours} & \textbf{0.947} & \textbf{9.8} \\
+      Prior work    & 0.903 & 21.6 \\
+      \bottomrule
+    \end{tabular}
+    \caption{Comparison of methods on the benchmark.}
+  \end{table}
+\end{frame}
+
+\begin{frame}[fragile]{Source code}
+  Mark the frame \texttt{[fragile]} and use \texttt{lstlisting} (styled by
+  \env{uzhcode}) to show code:
+
+\begin{lstlisting}[language=Python]
+def fib(n):
+    # return the n-th Fibonacci number
+    a, b = 0, 1
+    for _ in range(n):
+        a, b = b, a + b
+    return a
+\end{lstlisting}
+
+  Inline, \cmd{section} starts a section and \env{itemize} an unnumbered list.
+\end{frame}
+
+
+\section{Full-bleed slides}
+
+\begin{frame}{A big number}
+  \numberoverlay{42}
+\end{frame}
+
+\begin{frame}
+  \vskip0.4cm
+  \fillimage{\textwidth}{\textheight}{img/uzh-city.jpg}
+\end{frame}
+
+
+\section{References}
+
+\begin{frame}[allowframebreaks]{References}
+  \nocite{*} % list every entry in ref.bib, even the uncited ones
+  \bibliographystyle{abbrv}
+  \bibliography{ref}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    {\usebeamerfont{title}\usebeamercolor[fg]{title}\Huge Thank you!}
+
+    \vskip1cm
+    \normalsize Questions?
+  \end{center}
+\end{frame}
+
+\end{document}

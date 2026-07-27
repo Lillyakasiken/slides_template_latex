@@ -1,0 +1,42 @@
+# --- LaTeX build artifacts ---
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.synctex(busy)
+*.dpth
+*.md5
+*.auxlock
+*.idx
+*.ilg
+*.ind
+*.xdv
+comment.cut
+*-concordance.tex
+
+# --- Compiled output (regenerate with `make`) ---
+# Ignore generated PDFs, but keep source images under any img/ folder.
+*.pdf
+!**/img/*.pdf
+
+# --- Accessible HTML export (latex2html.sh output) ---
+*.html
+
+# --- Editor / OS cruft ---
+.DS_Store
+*~
+*.swp
+.vscode/
+.idea/

@@ -1,0 +1,32 @@
+\ProvidesPackage{uzhcode}
+% Optional: source-code listings styled in the UZH corporate palette, plus the
+% \cmd and \env helpers for typesetting LaTeX commands/environments inline.
+% Load AFTER the theme:  \usepackage{uzhcode}
+% Remember to mark frames that contain listings with [fragile].
+
+\RequirePackage{listings}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\bfseries\color{uzh@blue},
+  commentstyle=\itshape\color{uzh@apple4},
+  stringstyle=\color{uzh@orange4},
+  numberstyle=\scriptsize\color{uzh@grey3},
+  numbers=left,
+  numbersep=8pt,
+  showstringspaces=false,
+  tabsize=2,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{uzh@lightgrey5},
+  backgroundcolor=\color{uzh@lightgrey1},
+  columns=flexible,
+  % Indent the whole listing so the frame is a little narrower on the left and
+  % the line numbers sit in the gap *outside* the frame (framexleftmargin left
+  % at 0), instead of hanging off the slide edge.
+  xleftmargin=2.8em,
+}
+
+% Inline helpers: \cmd{section} -> \section (blue), \env{itemize} (apple).
+\newcommand{\cmd}[1]{\texttt{\color{uzh@blue}\footnotesize$\backslash$#1}}
+\newcommand{\env}[1]{\texttt{\color{uzh@apple4}\footnotesize #1}}

@@ -1,0 +1,102 @@
+\RequirePackage{uzhsetup}
+
+\mode<presentation>
+
+\setbeamersize{text margin left=0.4cm,text margin right=0.4cm}
+
+\defbeamertemplate*{frametitle}{uzh}[1][left]{
+  \begin{beamercolorbox}[#1]{frametitle}
+    \usebeamerfont{frametitle}%
+    \vbox{}\vskip0.15cm%
+    \strut\insertframetitle\strut\par%
+    {%
+      \ifx\insertframesubtitle\@empty%
+      \else%
+      {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\strut\insertframesubtitle\strut\par}%
+      \fi
+    }%
+  \end{beamercolorbox}%
+}
+
+\defbeamertemplate{headline}{uzhlogo}{
+  \begin{beamercolorbox}[sep=0.4cm]{headline}
+    \raisebox{-0.43\height}{\includegraphics[width=2.2cm]{img/uzh-logo.pdf}}%
+    \ifx\insertinstitute\@empty%
+    \else%
+      \hskip0.4cm{\color{gray}\vrule}\hskip0.4cm%
+      \begin{minipage}{5cm}%
+        \raggedright
+        \textsb{\insertinstitute}%
+      \end{minipage}%
+    \fi%
+  \end{beamercolorbox}
+}
+
+\def\ps@navigation@titlepage{%
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{headline}[uzhlogo]
+  \@nameuse{ps@navigation}
+}
+
+\defbeamertemplate*{footline}{uzh}{
+  \vskip0.2cm
+  \begin{beamercolorbox}[sep=0.4cm]{footline}
+    \usebeamerfont{footline}\usebeamercolor[fg]{footline}\textsb{\uzh@uzh}%
+    \ifx\insertinstitute\@empty%
+    \else%
+      \hskip2ex|\hskip2ex\insertinstitute%
+    \fi%
+    \hfill%
+    \insertdate\hskip2ex|\hskip2ex\insertframenumber\,/\,\inserttotalframenumber%
+  \end{beamercolorbox}
+}
+
+\defbeamertemplate*{navigation symbols}{uzh}{}
+
+% --- Top navigation bar ----------------------------------------------------
+% Two stacked bars: a dark-blue section bar (mini-frame progress dots + section
+% names) and, *only when the current frame lives inside a subsection*, a
+% light-blue subsection bar underneath it. Frames that sit directly under a
+% section (no subsection) get just the dark bar -- the light-blue strip
+% disappears entirely instead of showing an empty band. When present, the
+% subsection bar uses a slightly larger font (see beamerthemeuzh.sty) and a
+% taller box so the subsection title reads clearly. Whichever bar is last gets
+% a soft, faded bottom edge (\uzh@headblur) that blurs into the slide body.
+
+% Soft bottom edge for the navigation bar: a 1ex strip of the bar colour that
+% fades to transparent at the very bottom, reusing the gradient mask that
+% smoothbars declares at \begin{document}.
+\newcommand{\uzh@headblur}[1]{%
+  \nointerlineskip%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=1ex,dp=0ex]{empty}%
+    {\usebeamercolor{#1}%
+      \begin{pgfpicture}%
+        \begin{pgfscope}%
+          \pgfsetfillcolor{#1.bg}%
+          \pgfpathrectangle{\pgfpoint{-.5\paperwidth}{-.5ex}}{\pgfpoint{\paperwidth}{1ex}}%
+          \pgfsetfading{beamer@belowframetitlemask}{}%
+          \pgfusepath{fill}%
+        \end{pgfscope}%
+      \end{pgfpicture}%
+    }%
+  \end{beamercolorbox}%
+}
+
+\defbeamertemplate*{headline}{uzh}{%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=2.25ex,dp=2.5ex]{section in head/foot}%
+    \insertnavigation{\paperwidth}%
+  \end{beamercolorbox}%
+  \ifx\insertsubsectionhead\@empty%
+    \uzh@headblur{section in head/foot}%
+  \else%
+    \begin{beamercolorbox}[wd=\paperwidth,ht=3ex,dp=1.75ex,%
+      leftskip=.3cm,rightskip=.3cm plus1fil]{subsection in head/foot}%
+      \usebeamerfont{subsection in head/foot}%
+      \usebeamertemplate{subsection in head/foot}%
+    \end{beamercolorbox}%
+    \uzh@headblur{subsection in head/foot}%
+  \fi%
+}
+
+\mode
+<all>
