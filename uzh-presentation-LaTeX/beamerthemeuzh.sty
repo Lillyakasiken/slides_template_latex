@@ -21,9 +21,16 @@
 
 % Recolor the navigation bar to the UZH corporate palette. These must be set
 % AFTER smoothbars is loaded, otherwise it overrides them with its defaults.
-\setbeamercolor{section in head/foot}{bg=uzh@blue,fg=white}
-\setbeamercolor{subsection in head/foot}{bg=uzh@blue1,fg=uzh@blue4}
-\setbeamercolor{mini frame}{parent=section in head/foot,fg=white,bg=uzh@blue}
+% The section bar (mini-frame dots + section names) sits on a white background
+% so the navigation area reads as part of the header rather than a coloured
+% band; it is separated from the slide body by a thin I-Math grey rule (see the
+% headline template in beamerouterthemeuzh.sty). When a subsection is active
+% that separator grows into an I-Math grey band carrying the subsection title in
+% white -- the same grey as the line, so with or without a subsection the
+% navigation is always closed off by the same colour.
+\setbeamercolor{section in head/foot}{bg=white,fg=uzh@imathgrey}
+\setbeamercolor{subsection in head/foot}{bg=uzh@imathgrey,fg=white}
+\setbeamercolor{mini frame}{parent=section in head/foot,fg=uzh@imathgrey,bg=white}
 \setbeamerfont{section in head/foot}{series=\bfseries}
 % Subsection bar is only shown when a subsection is active (see the custom
 % headline in beamerouterthemeuzh.sty), so it can afford a slightly larger,

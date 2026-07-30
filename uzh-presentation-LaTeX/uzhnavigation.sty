@@ -19,9 +19,15 @@
 
 % Vertical space added *before* each entry, on top of the (reduced) \parskip.
 % Sections get a touch more air; subsections stay tight to their section.
+%
+% Sections are numbered (1, 2, 3 ...) like the THU theme: the running section
+% number takes the place of the bullet as the entry marker. \inserttocsectionnumber
+% is provided by beamer while the table of contents is typeset. Subsections stay
+% unnumbered and simply indent under their section (see below), matching THU.
 \setbeamertemplate{section in toc}{%
   \vskip0.35ex%
-  \leavevmode\rlap{\raise0.2ex\hbox{\usebeamertemplate{section in toc bullet}}}%
+  \leavevmode%
+  \rlap{{\usebeamercolor[fg]{section in toc}\bfseries\inserttocsectionnumber}}%
   \hskip1.5em{\usebeamercolor[fg]{section in toc}\inserttocsection}\par%
 }
 \setbeamertemplate{subsection in toc}{%
@@ -53,15 +59,25 @@
   \end{frame}%
 }
 
-% Subsection outline slides are OFF by default: the navigation bar already
-% tracks the current subsection, and a slide before every subsection is usually
-% too much. To switch them on, add this to your document preamble:
+% Show an outline slide at the beginning of every subsection too, highlighting
+% the current subsection (THU-style). Together with the section slide above this
+% gives the familiar pair of navigation pages: a section-outline page when a new
+% section starts, then a subsection-outline page when its first subsection
+% starts. The current subsection is shown, the other subsections of the same
+% section are shaded, and subsections of other sections are hidden.
+\AtBeginSubsection[]{%
+  \begin{frame}{\outlinename}
+    \setlength{\parskip}{\uzhtocparskip}%
+    \tableofcontents[
+      sectionstyle=show/shaded,
+      subsectionstyle=show/shaded/hide,
+      subsubsectionstyle=show/shaded/hide]
+  \end{frame}%
+}
 %
-%   \AtBeginSubsection[]{%
-%     \begin{frame}{\outlinename}
-%       \tableofcontents[sectionstyle=show/shaded,
-%         subsectionstyle=show/shaded/hide,subsubsectionstyle=show/shaded/hide]
-%     \end{frame}}
+% To turn the per-subsection slides back OFF, remove the \AtBeginSubsection
+% block above (the navigation bar still tracks the current subsection on its
+% own).
 
 % --- Step-highlight lists --------------------------------------------------
 % Reveal a list one item per overlay, with the *current* item in full colour
@@ -97,7 +113,7 @@
 % Colours: override the two \colorlet definitions below in your preamble to
 % change the "current" and "past" colours.
 \colorlet{uzh@stepcurrent}{black}
-\colorlet{uzh@steppast}{uzh@grey3}
+\colorlet{uzh@steppast}{uzh@lightgrey5}
 \colorlet{uzh@stepcolor}{uzh@stepcurrent}% resolved per item/note, see below
 
 \newcounter{uzh@step}

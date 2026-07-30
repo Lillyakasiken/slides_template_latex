@@ -44,12 +44,37 @@
   \vskip0.19cm%
 }
 
-\newlength{\uzh@innertextwidth}
-\newlength{\uzh@innertextheight}
+% A big white number on a full-bleed I-Math grey panel (the same grey as the
+% navigation-bar separator line, uzh@imathgrey). The panel bleeds to the left,
+% right and bottom page edges. Use it as the only content of a top-aligned,
+% title-less frame:
+%   \begin{frame}[t]\numberoverlay{42}\end{frame}
+%
+% Beamer starts the frame body a fixed distance below the navigation separator
+% (its head-to-body gap). That gap is the same whether the separator is the thin
+% grey rule -- no subsection -- or the taller grey subsection band, so raising
+% the panel's top edge by that one constant closes the white strip in both
+% states. \uzh@navsepgap holds it; it is a hair more than the measured gap so the
+% panel top laps a fraction into the grey separator (same colour) for a seamless
+% join, while staying well clear of the mini-frame dots above.
+\newlength{\uzh@navsepgap}\setlength{\uzh@navsepgap}{7.5pt}
+\newlength{\uzh@paneltop}
 \newcommand{\numberoverlay}[1]{% content
-  \setlength{\uzh@innertextwidth}{\textwidth-0.0cm}
-  \setlength{\uzh@innertextheight}{\textheight-0.4cm}
-  \begin{tikzpicture}[remember picture,overlay]
-    \node[anchor=north west,outer sep=0.4cm,inner xsep=0cm,inner ysep=0.2cm,fill=uzh@blue,text=uzh@blue3,text width=\uzh@innertextwidth,text height=\uzh@innertextheight,align=right] at (current page.north west) {\fontsize{200}{200}\textbf{#1}};
-  \end{tikzpicture}
+  \noindent
+  % Top edge of the panel: the top of the text area (y=\textheight in local
+  % coordinates, where TeX clamps the tall bounding box) raised by the gap so it
+  % meets the navigation separator.
+  \setlength{\uzh@paneltop}{\textheight}%
+  \addtolength{\uzh@paneltop}{\uzh@navsepgap}%
+  \begin{tikzpicture}[remember picture]
+    % The bounding box is as tall as the text area; being far taller than
+    % \topskip, TeX clamps it flush to the top of the text area. Fill from the
+    % raised top edge down to the page's bottom, bleeding to the page's sides.
+    \useasboundingbox (0,0) rectangle (\linewidth,\textheight);
+    \fill[overlay,uzh@imathgrey]
+      (current page.west |- 0,\uzh@paneltop) rectangle (current page.south east);
+    \node[overlay,anchor=north east,text=white,inner sep=0.4cm]
+      at (current page.east |- 0,\uzh@paneltop)
+      {\fontsize{200}{200}\selectfont\textbf{#1}};
+  \end{tikzpicture}%
 }

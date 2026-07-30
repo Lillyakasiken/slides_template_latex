@@ -54,32 +54,25 @@
 \defbeamertemplate*{navigation symbols}{uzh}{}
 
 % --- Top navigation bar ----------------------------------------------------
-% Two stacked bars: a dark-blue section bar (mini-frame progress dots + section
-% names) and, *only when the current frame lives inside a subsection*, a
-% light-blue subsection bar underneath it. Frames that sit directly under a
-% section (no subsection) get just the dark bar -- the light-blue strip
-% disappears entirely instead of showing an empty band. When present, the
-% subsection bar uses a slightly larger font (see beamerthemeuzh.sty) and a
-% taller box so the subsection title reads clearly. Whichever bar is last gets
-% a soft, faded bottom edge (\uzh@headblur) that blurs into the slide body.
+% A white section bar (mini-frame progress dots + section names) tops every
+% slide and is closed off from the body by a thin horizontal rule in the I-Math
+% grey (uzh@imathgrey) -- the same blue-tinted grey as the line under the header
+% of the official UZH Institute of Mathematics template. Frames that sit
+% directly under a section (no subsection) get just that grey line. When the
+% current frame lives inside a subsection, the separator instead becomes an
+% I-Math grey band carrying the subsection title in white (a slightly larger
+% font, see beamerthemeuzh.sty). Either way the navigation area is always cut
+% from the slide body by the same grey.
 
-% Soft bottom edge for the navigation bar: a 1ex strip of the bar colour that
-% fades to transparent at the very bottom, reusing the gradient mask that
-% smoothbars declares at \begin{document}.
-\newcommand{\uzh@headblur}[1]{%
+% Thin I-Math grey separator rule under the navigation bar, edge to edge. The
+% colour is taken from the subsection band's background so the line and the band
+% stay in lock-step from a single definition.
+\newcommand{\uzh@navline}{%
   \nointerlineskip%
-  \begin{beamercolorbox}[wd=\paperwidth,ht=1ex,dp=0ex]{empty}%
-    {\usebeamercolor{#1}%
-      \begin{pgfpicture}%
-        \begin{pgfscope}%
-          \pgfsetfillcolor{#1.bg}%
-          \pgfpathrectangle{\pgfpoint{-.5\paperwidth}{-.5ex}}{\pgfpoint{\paperwidth}{1ex}}%
-          \pgfsetfading{beamer@belowframetitlemask}{}%
-          \pgfusepath{fill}%
-        \end{pgfscope}%
-      \end{pgfpicture}%
-    }%
-  \end{beamercolorbox}%
+  {\usebeamercolor{subsection in head/foot}%
+    \color{subsection in head/foot.bg}%
+    \rule{\paperwidth}{0.8pt}}%
+  \par%
 }
 
 \defbeamertemplate*{headline}{uzh}{%
@@ -87,14 +80,13 @@
     \insertnavigation{\paperwidth}%
   \end{beamercolorbox}%
   \ifx\insertsubsectionhead\@empty%
-    \uzh@headblur{section in head/foot}%
+    \uzh@navline%
   \else%
     \begin{beamercolorbox}[wd=\paperwidth,ht=3ex,dp=1.75ex,%
       leftskip=.3cm,rightskip=.3cm plus1fil]{subsection in head/foot}%
       \usebeamerfont{subsection in head/foot}%
       \usebeamertemplate{subsection in head/foot}%
     \end{beamercolorbox}%
-    \uzh@headblur{subsection in head/foot}%
   \fi%
 }
 
