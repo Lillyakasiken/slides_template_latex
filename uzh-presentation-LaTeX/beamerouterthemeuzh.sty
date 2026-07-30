@@ -46,7 +46,15 @@
     \else%
       \hskip2ex|\hskip2ex\insertinstitute%
     \fi%
+    \ifx\insertauthor\@empty%
+    \else%
+      \hskip2ex|\hskip2ex\insertauthor%
+    \fi%
     \hfill%
+    \ifx\uzh@occasion\@empty%
+    \else%
+      \uzh@occasion\hskip2ex|\hskip2ex%
+    \fi%
     \insertdate\hskip2ex|\hskip2ex\insertframenumber\,/\,\inserttotalframenumber%
   \end{beamercolorbox}
 }
@@ -75,11 +83,24 @@
   \par%
 }
 
+% Outline frames list the subsections in the slide body, so repeating the
+% current subsection in the band under the navigation bar is redundant. Frames
+% that set this switch fall back to the thin grey rule, exactly like frames that
+% sit directly under a section. Use the public \uzhhidenavsubsection /
+% \uzhshownavsubsection pair *around* a frame (not inside it -- the headline is
+% typeset when the frame is shipped out at \end{frame}); the automatic outline
+% frames in uzhnavigation.sty do this for you.
+\newif\ifuzh@navnosubsection
+\newcommand{\uzhhidenavsubsection}{\uzh@navnosubsectiontrue}
+\newcommand{\uzhshownavsubsection}{\uzh@navnosubsectionfalse}
+
 \defbeamertemplate*{headline}{uzh}{%
   \begin{beamercolorbox}[wd=\paperwidth,ht=2.25ex,dp=2.5ex]{section in head/foot}%
     \insertnavigation{\paperwidth}%
   \end{beamercolorbox}%
   \ifx\insertsubsectionhead\@empty%
+    \uzh@navline%
+  \else\ifuzh@navnosubsection%
     \uzh@navline%
   \else%
     \begin{beamercolorbox}[wd=\paperwidth,ht=3ex,dp=1.75ex,%
@@ -87,7 +108,7 @@
       \usebeamerfont{subsection in head/foot}%
       \usebeamertemplate{subsection in head/foot}%
     \end{beamercolorbox}%
-  \fi%
+  \fi\fi%
 }
 
 \mode

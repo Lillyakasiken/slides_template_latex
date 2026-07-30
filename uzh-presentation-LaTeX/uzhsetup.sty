@@ -15,6 +15,15 @@
   \else University of Zurich\fi%
 }
 
+% Purpose of the talk -- "1st Committee Meeting", "Doctoral Defence", ... Set it
+% in the preamble like \title or \author:
+%   \occasion{1st Committee Meeting}
+% It appears in the footline just left of the date; leave it unset and the
+% footline looks exactly as before.
+\newcommand{\uzh@occasion}{}
+\newcommand{\occasion}[1]{\renewcommand{\uzh@occasion}{#1}}
+\newcommand{\insertoccasion}{\uzh@occasion}
+
 \newlength{\uzh@oW}
 \newlength{\uzh@oH}
 \newlength{\uzh@rW}
@@ -36,7 +45,7 @@
   }%
 }
 
-\newcommand{\imagecard}[4][2cm]{% [height], image, title, subtitle
+\newcommand{\imagecard}[4][3cm]{% [height], image, title, subtitle
   \fillimage{\textwidth}{#1}{#2}
   \scriptsize
   \strut\textbf{#3} \\

@@ -49,7 +49,14 @@
 % Show an outline slide at the beginning of every section. The current section
 % is highlighted; the other sections are shaded. The subsections of the current
 % section are listed, subsections of other sections are hidden.
+% The outline frames list the subsections in the slide body, so the subsection
+% band under the navigation bar would only repeat what is already on the slide.
+% \uzhhidenavsubsection (outer theme) suppresses it for these frames -- they get
+% the plain grey separator rule instead. The switch has to be set outside the
+% frame environment, because the headline is typeset when the frame is shipped
+% out at \end{frame}.
 \AtBeginSection[]{%
+  \uzhhidenavsubsection
   \begin{frame}{\outlinename}
     \setlength{\parskip}{\uzhtocparskip}%
     \tableofcontents[
@@ -57,6 +64,7 @@
       subsectionstyle=show/shaded/hide,
       subsubsectionstyle=show/shaded/hide]
   \end{frame}%
+  \uzhshownavsubsection
 }
 
 % Show an outline slide at the beginning of every subsection too, highlighting
@@ -66,6 +74,7 @@
 % starts. The current subsection is shown, the other subsections of the same
 % section are shaded, and subsections of other sections are hidden.
 \AtBeginSubsection[]{%
+  \uzhhidenavsubsection
   \begin{frame}{\outlinename}
     \setlength{\parskip}{\uzhtocparskip}%
     \tableofcontents[
@@ -73,6 +82,7 @@
       subsectionstyle=show/shaded/hide,
       subsubsectionstyle=show/shaded/hide]
   \end{frame}%
+  \uzhshownavsubsection
 }
 %
 % To turn the per-subsection slides back OFF, remove the \AtBeginSubsection
