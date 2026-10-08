@@ -25,6 +25,15 @@
 *.xdv
 comment.cut
 *-concordance.tex
+*.backup
+
+# --- Generated driver files (Makefile: make draft / short / frames) ---
+*-draft.tex
+*_short.tex
+*-frames.tex
+
+# --- latex2html.sh temp file (left behind if the script is killed) ---
+tmp.*.tex
 
 # --- Compiled output (regenerate with `make`) ---
 # Ignore generated PDFs, but keep source images under any img/ folder.
@@ -36,6 +45,7 @@ comment.cut
 
 # --- Editor / OS cruft ---
 .DS_Store
+._*
 *~
 *.swp
 .vscode/
