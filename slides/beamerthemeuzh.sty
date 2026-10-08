@@ -40,5 +40,15 @@
 % Automatic outline frames, TOC styling and block colors.
 \RequirePackage{uzhnavigation}
 
+% Ready-made reference and closing frames (\uzhbibframe, \uzhthanksframe).
+\RequirePackage{uzhframes}
+
+% The footline counts the frames ("12 / 45", see beamerouterthemeuzh.sty).
+% Frames after \appendix are kept for a question and are not walked through,
+% thus they must not make the talk look longer than it is. This package
+% freezes the total at the last main frame, then counts the appendix frames
+% from 1 again: a main frame reads "12 / 45", an appendix frame "3 / 18".
+\RequirePackage{appendixnumberbeamer}
+
 \mode
 <all>

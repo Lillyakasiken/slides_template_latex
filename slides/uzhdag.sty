@@ -1,0 +1,115 @@
+% UZH-styled TikZ helpers for drawing Bayesian-network DAGs, including the
+% time-slice diagrams used for dynamic / time-series ABNs.
+%
+% Load after the theme:  \usepackage{uzhdag}
+%
+% Styles:
+%   dagnode    a variable node:  \node[dagnode] (a) at (0,0) {$a_t$};
+%   dagedge    a present edge:   \draw[dagedge] (a) -- (b);
+%   dagabsent  an absent edge (dashed, muted berry) -- draw it to show that a
+%              dependency is *not* there ("missing arrows are the information")
+%
+% All styles accept extra TikZ options, e.g. a coefficient-strength edge:
+%   \draw[dagedge, line width=2pt] (a) -- (b);
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{uzhdag}[2026/08/25 TikZ styles for Bayesian-network DAGs]
+
+\RequirePackage{tikz}
+\RequirePackage{uzhsetup}   % \uzhtightmath, used by \dagtightmath below
+\usetikzlibrary{arrows.meta}
+
+% Fallback so the package also works outside the uzh beamer theme
+\providecolor{uzh@berry}{HTML}{BF0D3E}
+
+\tikzset{
+  dagnode/.style={circle, draw, semithick, minimum size=0.92cm, inner sep=0pt,
+                  font=\footnotesize},
+  dagedge/.style={-{Stealth[length=2mm]}, semithick},
+  dagabsent/.style={-{Stealth[length=2mm]}, semithick, dashed,
+                    draw=uzh@berry!70, opacity=0.7},
+}
+
+% A smaller node, for a DAG that shares the slide with a text column. Put it
+% on the picture, thus all its nodes change together:
+%   \begin{tikzpicture}[x=1.4cm, y=0.9cm, dagsmall]
+\tikzset{
+  dagsmall/.style={dagnode/.append style={minimum size=0.7cm}},
+}
+
+% ---------------------------------------------------------------------------
+% Unified layout for a series of slides that each show one DAG
+%
+% Three quantities decide where a DAG lands on the slide: the height of the
+% text above the columns, the width of the column, and the size of the
+% picture. The helpers below fix all three, so the DAG stays on the same spot
+% from slide to slide.
+%
+%   \daglead{lead-in text above the columns}
+%   \begin{columns}[T]
+%     \begin{column}{\dagcolwidth}
+%       \begin{dagfig}
+%         \node[dagnode] (am) at (0,0) {$a_{t-1}$};
+%         ...
+%       \end{dagfig}
+%       \dagnote{$\beta_t = 0$}
+%     \end{column}
+%     \begin{column}{\dagtextwidth}
+%       ... the algebra ...
+%     \end{column}
+%   \end{columns}
+%
+% The box of \daglead has a constant height of one line, thus the columns
+% below it start at the same height on each slide. Keep each lead-in to one
+% line; a longer text goes below the DAG or into the text column.
+
+\newcommand{\dagcolwidth}{0.34\textwidth}   % the column that holds the DAG
+\newcommand{\dagtextwidth}{0.62\textwidth}  % the column that holds the text
+
+% Lead-in paragraph in a box of constant height (one line)
+\newlength{\uzh@dagleadht}
+\newcommand{\daglead}[1]{%
+  \setlength{\uzh@dagleadht}{1.15\baselineskip}%
+  \begin{minipage}[t][\uzh@dagleadht][t]{\linewidth}#1\end{minipage}%
+  \par\smallskip}
+
+% A DAG picture with constant unit vectors and a constant bounding box:
+% three time slices at x = 0, 1, 2 and two variables at y = 0, -1. A DAG that
+% shows only two slices keeps the empty third slice, thus its nodes stay on
+% the same grid as the nodes of the other slides.
+\newenvironment{dagfig}
+  {\par\centering
+   \begin{tikzpicture}[x=1.55cm, y=1.34cm]
+   \useasboundingbox (-0.38,0.4) rectangle (2.38,-1.37);}
+  {\end{tikzpicture}\par}
+
+% Caption below a dagfig
+\newcommand{\dagnote}[1]{\par\vspace{2pt}{\centering\footnotesize #1\par}}
+
+% Tighter space around displayed formulas. Put it at the top of a text column
+% that holds more than one display, thus the column stays on the slide. It is
+% the DAG-slide preset of \uzhtightmath (uzhsetup.sty); call \uzhtightmath
+% directly for other values.
+\newcommand{\dagtightmath}{\uzhtightmath{0.3\baselineskip}{0.3\baselineskip}}
+
+% A displayed equation block that is flush left at a constant indent. Two
+% blocks that follow each other thus start at the same horizontal position,
+% which align* does not do: align* centres each block on its own width.
+% The body is an alignedat with three column pairs. Start each row with "&",
+% thus the left-hand side goes in a left-aligned column:
+%
+%   \begin{dagmatharray}
+%     & a_t &&{}= C_{11} a_{t-1} & \quad & C_{11} = 1 \\
+%     & b_t &&{}= C_{21} a_{t-1} &       & C_{21} = 0
+%   \end{dagmatharray}
+%
+% Pair 1 holds the left-hand side, pair 2 the relation and the right-hand
+% side, pair 3 an optional note. Write "{}=" to keep the space around the
+% relation sign. alignedat adds no space between the pairs, thus put the gap
+% before the note in the fifth column, as "&\quad&".
+\newlength{\dagmathindent}
+\setlength{\dagmathindent}{1.5em}
+\newenvironment{dagmatharray}
+  {\par\addvspace{\abovedisplayskip}%
+   \noindent\hspace*{\dagmathindent}%
+   $\begin{alignedat}{3}}
+  {\end{alignedat}$\par\addvspace{\belowdisplayskip}}

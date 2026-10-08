@@ -1,0 +1,199 @@
+\RequirePackage{uzhsetup}
+
+\mode<presentation>
+
+\setbeamersize{text margin left=0.4cm,text margin right=0.4cm}
+
+\defbeamertemplate*{frametitle}{uzh}[1][left]{
+  \begin{beamercolorbox}[#1]{frametitle}
+    \usebeamerfont{frametitle}%
+    \vbox{}\vskip0.15cm%
+    \strut\insertframetitle\strut\par%
+    {%
+      \ifx\insertframesubtitle\@empty%
+      \else%
+      {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\strut\insertframesubtitle\strut\par}%
+      \fi
+    }%
+  \end{beamercolorbox}%
+}
+
+% Space left for the institute beside the logo: the paper width minus the
+% colorbox padding (0.4cm each side), the 2.2cm logo, and the 0.4cm + rule +
+% 0.4cm gutter. Deriving it instead of hard-coding 5cm lets a long department
+% name break where it wants to, so authors need no manual \\ in \institute --
+% which matters because beamer turns \\ into a comma inside head- and footlines.
+\newlength{\uzh@headinstwd}
+\newcommand{\uzh@setheadinstwd}{%
+  \setlength{\uzh@headinstwd}{\paperwidth-2.2cm-2.4cm-0.4pt}%
+}
+
+\defbeamertemplate{headline}{uzhlogo}{
+  \begin{beamercolorbox}[sep=0.4cm]{headline}
+    \raisebox{-0.43\height}{\includegraphics[width=2.2cm]{img/uzh-logo.pdf}}%
+    \ifx\insertinstitute\@empty%
+    \else%
+      \hskip0.4cm{\color{gray}\vrule}\hskip0.4cm%
+      \uzh@setheadinstwd%
+      \begin{minipage}{\uzh@headinstwd}%
+        \raggedright
+        \textsb{\insertinstitute}%
+      \end{minipage}%
+    \fi%
+  \end{beamercolorbox}
+}
+
+\def\ps@navigation@titlepage{%
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{headline}[uzhlogo]
+  \@nameuse{ps@navigation}
+}
+
+\defbeamertemplate*{footline}{uzh}{
+  \vskip0.2cm
+  \begin{beamercolorbox}[sep=0.4cm]{footline}
+    \usebeamerfont{footline}\usebeamercolor[fg]{footline}%
+    % The UZH / DM3L wordmark (vector redraw, img/UZH_dm3l.tex) takes the
+    % place of the "University of Zurich | institute" text. Its box is given
+    % zero height and depth so the footline keeps the metrics of a one-line
+    % text footline -- beamer measures the footline once and sizes every
+    % slide's body from it -- and the mark extends into the colorbox's 0.4cm
+    % padding instead. The raise centres it on the 5pt text line.
+    \raisebox{-0.21cm}[0pt][0pt]{%
+      \includegraphics[height=0.55cm]{img/UZH_dm3l.pdf}}%
+    \ifx\insertauthor\@empty%
+    \else%
+      \hskip2ex|\hskip2ex\insertauthor%
+    \fi%
+    \hfill%
+    \ifx\uzh@occasion\@empty%
+    \else%
+      \uzh@occasion\hskip2ex|\hskip2ex%
+    \fi%
+    \insertdate\hskip2ex|\hskip2ex\insertframenumber\,/\,\inserttotalframenumber%
+  \end{beamercolorbox}
+}
+
+\defbeamertemplate*{navigation symbols}{uzh}{}
+
+% --- Top navigation bar ----------------------------------------------------
+% A white section bar (mini-frame progress dots + section names) tops every
+% slide and is closed off from the body by a thin horizontal rule in the I-Math
+% grey (uzh@imathgrey) -- the same blue-tinted grey as the line under the header
+% of the official UZH Institute of Mathematics template. Frames that sit
+% directly under a section (no subsection) get just that grey line. When the
+% current frame lives inside a subsection, the separator instead becomes an
+% I-Math grey band carrying the subsection title in white (a slightly larger
+% font, see beamerthemeuzh.sty). Either way the navigation area is always cut
+% from the slide body by the same grey.
+
+% Where a mini-frame dot jumps to. Beamer's \beamer@link receives the page
+% range first/last of the dot's frame from the .nav file and links to the
+% FIRST overlay page (it links to the last page only for the frame currently
+% on screen). During Q&A you click a dot to show the finished slide, so link
+% every dot to the LAST overlay page of its frame instead: the page on which
+% all content of the frame is visible. In handout mode first = last, so the
+% redefinition changes nothing there.
+\def\beamer@link(#1/#2){\hyperlink{Navigation#2}}
+
+% Thin I-Math grey separator rule under the navigation bar, edge to edge. The
+% colour is taken from the subsection band's background so the line and the band
+% stay in lock-step from a single definition.
+\newcommand{\uzh@navline}{%
+  \nointerlineskip%
+  {\usebeamercolor{subsection in head/foot}%
+    \color{subsection in head/foot.bg}%
+    \rule{\paperwidth}{0.8pt}}%
+  \par%
+}
+
+% Outline frames list the subsections in the slide body, so repeating the
+% current subsection in the band under the navigation bar is redundant. Frames
+% that set this switch fall back to the thin grey rule, exactly like frames that
+% sit directly under a section. Use the public \uzhhidenavsubsection /
+% \uzhshownavsubsection pair *around* a frame (not inside it -- the headline is
+% typeset when the frame is shipped out at \end{frame}); the automatic outline
+% frames in uzhnavigation.sty do this for you.
+\newif\ifuzh@navnosubsection
+\newcommand{\uzhhidenavsubsection}{\uzh@navnosubsectiontrue}
+\newcommand{\uzhshownavsubsection}{\uzh@navnosubsectionfalse}
+
+% Box used to detect an empty subsection title: \ifx\insertsubsectionhead\@empty
+% only catches "no subsection started yet", not an empty \subsection*{} (whose
+% head is a non-\@empty macro expanding to nothing). Measuring the typeset
+% width catches both, so a starred empty subsection -- used to *end* a
+% subsection mid-section -- falls back to the thin rule automatically.
+\newbox\uzh@subsecheadbox
+
+% --- Back to the contents, from the appendix -------------------------------
+% A frame in the appendix is shown to answer a question. When the answer is
+% given, the talk must go back. The button at the right end of the navigation
+% bar jumps to the opening overview, and every entry of that overview is itself
+% a link -- thus two clicks reach any part of the talk.
+%
+% The button is shown only when both conditions are true:
+%   - the frame is in the appendix (\ifbeamer@inappendix, set by \appendix)
+%   - the talk has an opening overview to jump to (\ifuzh@hastoc)
+% uzhnavigation.sty puts the target on the overview slide and sets the switch
+% through the .aux file, thus the switch is true from the second run on. A talk
+% without an overview -- and the short PDF, which drops it -- keeps the plain
+% full-width navigation bar.
+\newif\ifuzh@hastoc
+\def\uzh@tocanchorname{uzh@toc}
+
+% The name on the button. Rename it in the preamble:
+%   \renewcommand{\uzhtocbuttonname}{Overview}
+\newcommand{\uzhtocbuttonname}{Contents}
+
+% The button takes the font and the grey of the section names, thus it reads as
+% one more entry of the navigation bar. The triangle keeps it apart from a
+% section name. It sits on the baseline of the section row, because
+% \insertnavigation is a one-line \vbox.
+% A small solid triangle, drawn in em of the surrounding text, thus it keeps the
+% weight of the bold sans text beside it. A math \triangleleft would come from
+% the math font and look thin and light there.
+\newcommand{\uzh@tocarrow}{%
+  \tikz[baseline=0pt]{%
+    \fill (0,0.55ex) -- (0.66ex,1.1ex) -- (0.66ex,0) -- cycle;}%
+}
+
+\newcommand{\uzh@tocbutton}{%
+  \hyperlink{\uzh@tocanchorname}{%
+    {\usebeamerfont{section in head/foot}%
+     \usebeamercolor[fg]{section in head/foot}%
+     \uzh@tocarrow\,\uzhtocbuttonname}}%
+}
+
+\newbox\uzh@tocbtnbox
+\newlength{\uzh@navwd}
+
+\defbeamertemplate*{headline}{uzh}{%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=2.25ex,dp=2.5ex]{section in head/foot}%
+    \ifbeamer@inappendix\ifuzh@hastoc%
+      % The bar gives the button its measured width and keeps the rest for the
+      % section names and the progress dots.
+      \setbox\uzh@tocbtnbox\hbox{\uzh@tocbutton}%
+      \setlength{\uzh@navwd}{\paperwidth}%
+      \addtolength{\uzh@navwd}{-\wd\uzh@tocbtnbox}%
+      \addtolength{\uzh@navwd}{-0.3cm}%
+      \insertnavigation{\uzh@navwd}%
+      \box\uzh@tocbtnbox\hskip0.3cm%
+    \else\insertnavigation{\paperwidth}\fi%
+    \else\insertnavigation{\paperwidth}\fi%
+  \end{beamercolorbox}%
+  \setbox\uzh@subsecheadbox\hbox{\insertsubsectionhead}%
+  \ifdim\wd\uzh@subsecheadbox=0pt%
+    \uzh@navline%
+  \else\ifuzh@navnosubsection%
+    \uzh@navline%
+  \else%
+    \begin{beamercolorbox}[wd=\paperwidth,ht=3ex,dp=1.75ex,%
+      leftskip=.3cm,rightskip=.3cm plus1fil]{subsection in head/foot}%
+      \usebeamerfont{subsection in head/foot}%
+      \usebeamertemplate{subsection in head/foot}%
+    \end{beamercolorbox}%
+  \fi\fi%
+}
+
+\mode
+<all>

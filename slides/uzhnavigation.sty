@@ -1,0 +1,544 @@
+\ProvidesPackage{uzhnavigation}
+% THU-style automatic outline frames and table-of-contents styling for the
+% UZH beamer theme.
+
+\mode<presentation>
+
+% Round bullets for the table of contents (matches the mini-frame dots in the
+% navigation bar). Frame body itemize keeps the UZH corporate dashes.
+\setbeamertemplate{sections/subsections in toc}[circle]
+\setbeamertemplate{subsections in toc}[square]
+
+% --- Compact outline -------------------------------------------------------
+% The inner theme uses a generous \parskip (1.2ex) for slide body text, which
+% also pushes the table-of-contents entries far apart -- long outlines then
+% run past the bottom of the slide and collide with the footer. Tighten the
+% line spacing inside outline frames and make subsection entries a little
+% smaller than section entries.
+\setbeamerfont{subsection in toc}{size=\footnotesize}
+
+% Vertical space added *before* each entry, on top of the (reduced) \parskip.
+% Sections get a touch more air; subsections stay tight to their section.
+%
+% Sections are numbered (1, 2, 3 ...) like the THU theme: the running section
+% number takes the place of the bullet as the entry marker. \inserttocsectionnumber
+% is provided by beamer while the table of contents is typeset. Subsections stay
+% unnumbered and simply indent under their section (see below), matching THU.
+\setbeamertemplate{section in toc}{%
+  \vskip0.35ex%
+  \leavevmode%
+  \rlap{{\usebeamercolor[fg]{section in toc}\bfseries\inserttocsectionnumber}}%
+  \hskip1.5em{\usebeamercolor[fg]{section in toc}\inserttocsection}\par%
+}
+\setbeamertemplate{subsection in toc}{%
+  \leavevmode\leftskip=1.5em%
+  \rlap{\raise0.1ex\hbox{\usebeamertemplate{subsection in toc bullet}}}%
+  \hskip1em{\usebeamerfont{subsection in toc}%
+    \usebeamercolor[fg]{subsection in toc}\inserttocsubsection}\par%
+}
+
+% Local \parskip used while an outline TOC is typeset. Small enough to keep all
+% sections on one slide, large enough to keep the list readable. Public (no @)
+% so it can also be used in the document body, e.g. the manual Outline frame.
+\newcommand{\uzhtocparskip}{0.35ex}
+
+% Title shown on the automatic outline slides. Redefine \outlinename to change
+% it, e.g. \renewcommand{\outlinename}{Agenda}.
+\providecommand{\outlinename}{Outline}
+
+% --- Outline slides --------------------------------------------------------
+% Three outline frames are built from the same table of contents: the opening
+% overview (\uzhoutlineframe, put after \maketitle), one at the start of every
+% section, and one at the start of every subsection. Each frame is kept in its
+% own internal macro and then \let into place, so that the whole set can be
+% switched off from a single command (\uzhoutlineson / \uzhoutlinesoff below).
+% A TeX conditional cannot be put around a frame environment, thus the \let.
+
+% Beamer spreads the section entries of a table of contents with \vfill, but
+% NOT when the style for the subsections of the OTHER sections is `hide': it
+% then puts a fixed \vskip1.5em between the sections instead (see
+% \beamer@sectionintoc in beamerbasetoc.sty). With that fixed skip a deck with
+% many entries runs past the bottom of the slide. The test there is
+% \ifx\beamer@toc@ooss\beamer@hidetext, thus \beamer@hidetext is made
+% un-matchable for the duration of the outline frame and the \vfill spreading
+% comes back. Nothing else in this theme reads \beamer@hidetext (beamer itself
+% uses it only for the vertical sidebar navigation, which this theme does not
+% use), and the \let is local to the frame body.
+\newcommand{\uzh@tocspread}{\let\beamer@hidetext\relax}
+
+% --- Opening outline slide -------------------------------------------------
+% The overview slide for the start of the talk, put directly after \maketitle.
+% It shows the sections only. The subsections of a section come later, on the
+% automatic outline slide that opens that section (see \uzh@sectionoutline
+% below), so this slide gives the shape of the talk and not the full list. It
+% also keeps a deck with many subsections on one slide.
+%
+% Beamer puts a fixed \vskip1.5em (and not \vfill) between the section entries
+% when the subsections are hidden, thus the entries stay together in the middle
+% of the slide instead of spreading over the full height.
+%
+% To show the subsections on this slide too, use a frame with a plain
+% \tableofcontents in its body instead:
+%   \begin{frame}{\outlinename}
+%     \setlength{\parskip}{\uzhtocparskip}
+%     \tableofcontents
+%   \end{frame}
+%
+% The slide also carries the target of the appendix button (see the headline
+% template in beamerouterthemeuzh.sty). The write to the .aux file tells the
+% next run that the target is really there, thus the button is drawn only in a
+% talk that has this slide.
+\newcommand{\uzh@openingoutline}{%
+  \begin{frame}{\outlinename}
+    \hypertarget{\uzh@tocanchorname}{}%
+    \setlength{\parskip}{\uzhtocparskip}%
+    \tableofcontents[hideallsubsections]%
+  \end{frame}%
+  \immediate\write\@auxout{\string\global\string\uzh@hastoctrue}%
+}
+
+% --- Outline slide at the start of a section -------------------------------
+% The current section is shown and the other sections are shaded. Only the
+% CURRENT section is expanded: its subsections are listed, and the subsections
+% of every other section are hidden. The slide thus gives the shape of the
+% whole talk plus the detail of the part that starts now:
+%
+%   1  What ABN is
+%        Bayesian networks
+%        Structure learning
+%   2  From ABN to TSABN
+%   3  Next steps
+%
+% \uzh@tocspread keeps the section entries spread over the full slide height,
+% which the `hide' style would otherwise switch off -- see the note above.
+%
+% The outline frames list the subsections in the slide body, so the subsection
+% band under the navigation bar would only repeat what is already on the slide.
+% \uzhhidenavsubsection (outer theme) suppresses it for these frames -- they get
+% the plain grey separator rule instead. The switch has to be set outside the
+% frame environment, because the headline is typeset when the frame is shipped
+% out at \end{frame}.
+\newcommand{\uzh@sectionoutline}{%
+  \uzhhidenavsubsection
+  \begin{frame}{\outlinename}
+    \setlength{\parskip}{\uzhtocparskip}%
+    \uzh@tocspread
+    \tableofcontents[
+      sectionstyle=show/shaded,
+      subsectionstyle=show/shaded/hide,
+      subsubsectionstyle=show/shaded/hide]
+  \end{frame}%
+  \uzhshownavsubsection
+}
+
+% --- Outline slide at the start of a subsection ----------------------------
+% The same slide at the beginning of every subsection, with the current
+% subsection highlighted (THU-style). Together with the section slide above
+% this gives the familiar pair of navigation pages: a section-outline page when
+% a new section starts, then a subsection-outline page when its first
+% subsection starts.
+\newcommand{\uzh@subsectionoutline}{%
+  \uzhhidenavsubsection
+  \begin{frame}{\outlinename}
+    \setlength{\parskip}{\uzhtocparskip}%
+    \uzh@tocspread
+    \tableofcontents[
+      sectionstyle=show/shaded,
+      subsectionstyle=show/shaded/hide,
+      subsubsectionstyle=show/shaded/hide]
+  \end{frame}%
+  \uzhshownavsubsection
+}
+
+% --- Switching the outline slides on and off -------------------------------
+% \uzhoutlinesoff makes all three outline frames empty, \uzhoutlineson puts
+% them back. Use either one in the preamble of a talk.
+%
+% \uzhautooutlinesoff keeps the opening overview and drops only the automatic
+% slides at the start of each section and of each subsection. Use it when the
+% navigation bar already shows where the talk is, thus these slides only
+% repeat it:
+%   \uzhautooutlinesoff
+%
+% For one kind of outline slide only, empty its macro by hand in the preamble:
+%   \makeatletter\let\uzh@outline@subsection\@empty\makeatother
+% turns the per-subsection slides off and keeps the per-section ones (the
+% navigation bar still tracks the current subsection on its own).
+\newcommand{\uzhoutlineson}{%
+  \let\uzhoutlineframe\uzh@openingoutline
+  \let\uzh@outline@section\uzh@sectionoutline
+  \let\uzh@outline@subsection\uzh@subsectionoutline
+}
+\newcommand{\uzhoutlinesoff}{%
+  \let\uzhoutlineframe\@empty
+  \let\uzh@outline@section\@empty
+  \let\uzh@outline@subsection\@empty
+}
+
+% The automatic slides only -- the opening overview stays.
+\newcommand{\uzhautooutlineson}{%
+  \let\uzh@outline@section\uzh@sectionoutline
+  \let\uzh@outline@subsection\uzh@subsectionoutline
+}
+\newcommand{\uzhautooutlinesoff}{%
+  \let\uzh@outline@section\@empty
+  \let\uzh@outline@subsection\@empty
+}
+
+\AtBeginSection[]{\uzh@outline@section}
+\AtBeginSubsection[]{\uzh@outline@subsection}
+
+\uzhoutlineson
+
+% The short PDF (`make short', beamer handout mode) is read and not presented.
+% Its navigation bar already gives the sections and the position in the talk,
+% so the outline slides only repeat that information on pages that cost the
+% reader a page turn each. They are switched off there. Put \uzhoutlineson in
+% the preamble of your talk to keep them in the short PDF as well.
+\mode<handout>{\uzhoutlinesoff}
+
+% --- Step-highlight lists --------------------------------------------------
+% Reveal a list one item per overlay, with the *current* item in full colour
+% (black, dash and text) and every previously revealed item greyed out, so the
+% audience's eye lands on exactly the point being discussed. The frame title
+% (\steptitle) and intro prose (\stepnote) recede to grey while the list
+% builds. A closing note (\stepsummary) is held back until the whole list has
+% been revealed and greyed, then a final overlay turns everything black to
+% talk over. The reveal has a fixed shape:
+%
+%   overlay 1        intro: title + \stepnote black, NO items, no \stepsummary
+%   overlay 2        first item black; title + \stepnote grey
+%   overlay 3..N+1   next item black, earlier items + title + \stepnote grey
+%   overlay N+2      title, \stepnote and every item grey; \stepsummary
+%                    appears black -- the closing note fades in
+%   overlay N+3      summary: title, \stepnote, every item and \stepsummary
+%                    all black, to talk over
+%
+% So a 3-item list runs over 6 overlays.
+%
+% Usage (inside a frame):
+%   \begin{frame}{\steptitle{My title}}   % title follows the fade too
+%   \setsteps{3}                 % number of \stepitem entries in this frame
+%   \stepnote{Intro sentence \ldots}
+%   \begin{steplist}
+%     \stepitem{First point}
+%     \stepitem{Second point}
+%     \stepitem{Third point}
+%   \end{steplist}
+%   \stepsummary{Closing remark that fades in after the list \ldots}
+%   \end{frame}
+%
+% Colours: override the two \colorlet definitions below in your preamble to
+% change the "current" and "past" colours.
+\colorlet{uzh@stepcurrent}{black}
+\colorlet{uzh@steppast}{uzh@lightgrey5}
+\colorlet{uzh@stepcolor}{uzh@stepcurrent}% resolved per item/note, see below
+
+\newcounter{uzh@step}
+\newcounter{uzh@stepitemat}
+\newcounter{uzh@stepfinal}
+\newcounter{uzh@stepnoteat}
+
+% Declare how many \stepitem entries the frame's list has. Call once, at the
+% top of the frame (before any \steptitle, \stepnote or steplist) so the title
+% and surrounding notes also know when the final "summary" overlay is reached.
+% A leading intro overlay, a \stepsummary reveal overlay and a trailing all-
+% black summary overlay are added around the N item overlays, so \stepsummary
+% appears on overlay N+2 and the final overlay is N+3; resets the item counter.
+\newcommand{\setsteps}[1]{%
+  \setcounter{uzh@stepfinal}{\numexpr#1+3\relax}%
+  \setcounter{uzh@stepnoteat}{\numexpr#1+2\relax}%
+  \setcounter{uzh@step}{0}%
+  % Force the extra all-black summary overlay to exist: the colour logic below
+  % uses \ifnum (not overlay specs), so without this reference beamer would
+  % stop the frame one overlay too early.
+  \only<\theuzh@stepfinal>{}%
+}
+
+% Emit the \color for a step item whose "current" (black) overlay is #1: black
+% on overlay #1, grey while an earlier point is current, black again from the
+% final summary overlay on. This MUST be evaluated inside the (overlay-aware)
+% \item body -- a colour chosen outside the item, before \item, is fixed once
+% at read time and then reused for every item, so later items lose their black
+% "current" pass. #1 must be a literal number, which \stepitem bakes in.
+\newcommand{\uzh@stepcol}[1]{%
+  \ifnum\beamer@slideinframe=#1\relax
+    \color{uzh@stepcurrent}%
+  \else
+    \ifnum\beamer@slideinframe<\value{uzh@stepfinal}\relax
+      \color{uzh@steppast}%
+    \else
+      \color{uzh@stepcurrent}%
+    \fi
+  \fi
+}
+
+% Colour for CONTEXT elements (title + \stepnote prose): black on the intro
+% overlay (1), grey while the list builds, black again on the final summary
+% overlay. The context recedes to grey as soon as the first point appears.
+\newcommand{\uzh@resolvenotecolor}{%
+  \ifnum\beamer@slideinframe<2\relax
+    \colorlet{uzh@stepcolor}{uzh@stepcurrent}%
+  \else
+    \ifnum\beamer@slideinframe<\value{uzh@stepfinal}\relax
+      \colorlet{uzh@stepcolor}{uzh@steppast}%
+    \else
+      \colorlet{uzh@stepcolor}{uzh@stepcurrent}%
+    \fi
+  \fi
+}
+
+\newenvironment{steplist}{%
+  \setcounter{uzh@step}{0}%
+  \begin{itemize}%
+}{%
+  \end{itemize}%
+}
+
+% One entry of a steplist. Takes the item text as its (braced) argument. Both
+% the dash marker and the text are coloured for the current overlay. Item k
+% appears on overlay k+1 (overlay 1 is the intro), is black there, greys while
+% later items are current, and turns black again on the summary overlay. The
+% appearance overlay is expanded to a literal number and frozen into the item
+% body via \uzh@stepitem@, so the colour is decided per overlay from inside the
+% item (see \uzh@stepcol).
+%
+% The optional argument overrides that overlay, for a list that does not start
+% on overlay 2 -- e.g. a frame whose first item comes up together with the
+% \stepnote intro:
+%
+%   \setsteps{1}                 % 1+3 = 4 overlays
+%   \stepnote{Intro \ldots}
+%   \begin{steplist}
+%     \stepitem[1]{\ldots with the intro}
+%     \stepitem[2]{\ldots then this}
+%     \stepitem[3]{\ldots then this}
+%   \end{steplist}
+%
+% Give \setsteps the number that puts the closing all-black overlay where you
+% want it (final = n+3), which is no longer the number of items once you
+% override. Number the items yourself for the whole list, not for some of it.
+\newcommand{\stepitem}[2][]{%
+  \stepcounter{uzh@step}%
+  \setcounter{uzh@stepitemat}{\numexpr\value{uzh@step}+1\relax}%
+  \if\relax\detokenize{#1}\relax\else
+    \setcounter{uzh@stepitemat}{#1}%
+  \fi
+  \edef\uzh@stepitem@n{\the\value{uzh@stepitemat}}%
+  \expandafter\uzh@stepitem@\expandafter{\uzh@stepitem@n}{#2}%
+}
+
+% Typeset one step item. #1 = literal appearance overlay, #2 = item text. The
+% dash marker (rebuilt from the theme's itemize-item template) and the text are
+% both coloured by \uzh@stepcol{#1}, evaluated inside the overlay-aware body.
+\newcommand{\uzh@stepitem@}[2]{%
+  \item<#1->[{\uzh@stepcol{#1}\usebeamerfont*{itemize item}\hbox{---}}]%
+    {\uzh@stepcol{#1}#2}%
+}
+
+% A steplist entry that stays current over a RANGE of overlays -- the
+% \stepitem counterpart of \steprangefade. The entry appears on overlay #1 and
+% holds black through overlay #2, then greys until the closing all-black
+% overlay. #3 is the item text. Use it for a point that the next point builds
+% on and which must not recede yet:
+%
+%   \begin{steplist}
+%     \stepitem[1]{What stays fixed}
+%     \steprangeitem{2}{3}{What changes \ldots}
+%     \stepitem[3]{\ldots and the result of it}
+%   \end{steplist}
+\newcommand{\steprangeitem}[3]{%
+  \stepcounter{uzh@step}%
+  \item<#1->[{\steprangefade{#1}{#2}\usebeamerfont*{itemize item}\hbox{---}}]%
+    {\steprangefade{#1}{#2}#3}%
+}
+
+% Intro prose before a steplist: black on the intro overlay, greyed while the
+% list builds, black again on the summary overlay. Requires \setsteps earlier
+% in the frame.
+\newcommand{\stepnote}[1]{{%
+  \uzh@resolvenotecolor
+  \color{uzh@stepcolor}#1%
+}}
+
+% Closing prose held back until the whole list is revealed: it fades in (black)
+% on overlay N+2 while the rest of the slide is still grey, and stays black
+% through the all-black summary overlay N+3. Reserves no space on earlier
+% overlays. Requires \setsteps earlier in the frame.
+\newcommand{\stepsummary}[1]{%
+  \only<\theuzh@stepnoteat->{{\color{uzh@stepcurrent}#1}}%
+}
+
+% Frame title that follows the same fade as \stepnote. Use as the frame title:
+% \begin{frame}{\steptitle{My title}}. Requires \setsteps in the frame body.
+\newcommand{\steptitle}[1]{{%
+  \uzh@resolvenotecolor
+  \color{uzh@stepcolor}#1%
+}}
+
+% ---------------------------------------------------------------------------
+% Steps that are not steplist items
+% ---------------------------------------------------------------------------
+% A frame can step through blocks, columns of prose or a figure instead of the
+% items of a steplist. The two helpers below apply the same fade rule to those
+% shapes. Both take the step's own overlay number and both need \setsteps at
+% the top of the frame, exactly as \stepitem does.
+%
+% Reveal each part yourself, because these helpers only set the colour:
+%
+%   \begin{frame}{\steptitle{My title}}
+%   \setsteps{1}                        % here: 4 overlays, the last all black
+%   \begin{columns}[T]
+%     \begin{column}{0.47\textwidth}
+%       \uncover<2->{{\stepblockfade{2}%
+%       \begin{block}{First block}\ldots\end{block}}}
+%     \end{column}
+%     \begin{column}{0.47\textwidth}
+%       \onslide<3->%
+%       {\steptextfade{3}Plain prose, display math allowed \ldots}
+%     \end{column}
+%   \end{columns}
+%   \end{frame}
+%
+% Use \onslide (declarative) and not \uncover for prose that holds display
+% math: \uncover reads its content as an argument, which breaks \[ \] and
+% align*. \uncover is right for a block or a figure, because those are boxes.
+
+% Snapshot of the block colours, taken at the start of the document so that a
+% talk can still override them in its preamble. \stepblockfade needs it: a
+% \setbeamercolor does not reliably fall back when the group around it ends,
+% so a greyed block leaks its colour into the next block of the same column.
+% The helper therefore sets the colours on EVERY overlay, grey or not, instead
+% of setting them only for grey and trusting the group to undo it.
+\AtBeginDocument{%
+  {\usebeamercolor{block title}%
+   \xglobal\colorlet{uzh@stepblocktitlefg}{fg}%
+   \xglobal\colorlet{uzh@stepblocktitlebg}{bg}}%
+  {\usebeamercolor{block body}%
+   \xglobal\colorlet{uzh@stepblockbodyfg}{fg}%
+   \xglobal\colorlet{uzh@stepblockbodybg}{bg}}%
+}
+
+% Put the block colours back to the snapshot above.
+\newcommand{\uzh@stepblockreset}{%
+  \setbeamercolor{block title}{bg=uzh@stepblocktitlebg,fg=uzh@stepblocktitlefg}%
+  \setbeamercolor{block body}{bg=uzh@stepblockbodybg,fg=uzh@stepblockbodyfg}%
+  \setbeamercolor{itemize item}{parent=item}%
+}
+
+% Fade rule for a beamer block: full colour on its own overlay #1, grey while a
+% later step is current, full colour again on the closing all-black overlay.
+% Call it inside the group that holds the block.
+\newcommand{\stepblockfade}[1]{%
+  \ifnum\beamer@slideinframe=#1\relax
+    \uzh@stepblockreset
+  \else
+    \ifnum\beamer@slideinframe<\value{uzh@stepfinal}\relax
+      \setbeamercolor{block title}{bg=uzh@lightgrey2,fg=uzh@steppast}%
+      \setbeamercolor{block body}{bg=uzh@lightgrey1,fg=uzh@steppast}%
+      \setbeamercolor{itemize item}{fg=uzh@steppast}%
+    \else
+      \uzh@stepblockreset
+    \fi
+  \fi
+}
+
+% Fade rule for a plain run of text: same three cases as \stepblockfade, but it
+% emits a \color, so put it at the start of the group that holds the text.
+\newcommand{\steptextfade}[1]{\uzh@stepcol{#1}}
+
+% Fade rule for a part that stays current over a RANGE of overlays: black from
+% overlay #1 to overlay #2, grey while a later step is current, black again on
+% the closing all-black overlay. Use it when several overlays build one object
+% -- a definition, then the map of it, then the algebra read off the map --
+% which must not recede while that object is still being built. Same interface
+% as \steptextfade, which is the special case #1 = #2.
+%
+%   \setsteps{4}                         % here: 7 overlays, the last all black
+%   \begin{frame}{\steprangefade{1}{4}My title}
+%     ...
+%     \onslide<3->{\steprangefade{3}{4}The algebra \ldots}
+%     \begin{steplist}
+%       \stepitem[5]{The first point about it}
+%     \end{steplist}
+%
+% Requires \setsteps at the top of the frame, exactly as \steptextfade does.
+\newcommand{\steprangefade}[2]{%
+  \stepifpast{#1}{#2}{\color{uzh@steppast}}{\color{uzh@stepcurrent}}}
+
+% The rule behind \steprangefade, as a branch instead of a colour: #3 is used
+% while the part is past (grey), #4 while it is current (black). Use it for a
+% part whose colour a \color does not reach -- a TikZ style that carries its
+% own colour, for example -- so that this part can follow the fade as well:
+%
+%   {\steprangefade{1}{2}%
+%    \stepifpast{1}{2}{\tikzset{dagabsent/.append style={draw=uzh@steppast}}}{}%
+%    \begin{dagfig} \ldots \end{dagfig}}
+\newcommand{\stepifpast}[4]{%
+  \ifnum\beamer@slideinframe<\value{uzh@stepfinal}\relax
+    \ifnum\beamer@slideinframe<#1\relax
+      #3%
+    \else
+      \ifnum\beamer@slideinframe>#2\relax
+        #3%
+      \else
+        #4%
+      \fi
+    \fi
+  \else
+    #4%
+  \fi
+}
+
+% Fade rule for a part that is current on a SET of overlays that is not a
+% range: black on each overlay of the comma list #1, grey on the other
+% overlays, black again on the closing all-black overlay. Use it for a part
+% that a later step comes back to -- a matrix that a subsequent step puts to
+% work, for example: \stepsetfade{4,6}. It works in math mode as well.
+%
+% Requires \setsteps at the top of the frame, exactly as \steptextfade does.
+\newif\ifuzh@stepmatch
+\newcommand{\stepsetfade}[1]{%
+  \uzh@stepmatchfalse
+  \@for\uzh@stepsetx:=#1\do{%
+    \ifnum\beamer@slideinframe=\uzh@stepsetx\relax\uzh@stepmatchtrue\fi}%
+  \ifuzh@stepmatch
+    \color{uzh@stepcurrent}%
+  \else
+    \ifnum\beamer@slideinframe<\value{uzh@stepfinal}\relax
+      \color{uzh@steppast}%
+    \else
+      \color{uzh@stepcurrent}%
+    \fi
+  \fi
+}
+
+% Hold a part at full colour on every overlay it is on. Use it for an object
+% that the later steps read FROM -- a figure, a map, a table -- which must stay
+% readable while a step that refers to it is current. It takes no overlay
+% number, because it never fades. Reveal the part as usual with \onslide or
+% \uncover; this only fixes the colour.
+\newcommand{\stepnofade}{\color{uzh@stepcurrent}}
+
+% --- Handout mode: every step resolved -------------------------------------
+% With the class option `handout` (the `make short` build) beamer collapses
+% each frame to ONE page that shows the content of every overlay at once. The
+% colour rules above cannot know that: they read \beamer@slideinframe, which
+% stays 1 on that single page, so every step except the first one would come
+% out grey. The handout page IS the closing all-black overlay of the frame,
+% thus in handout mode all fade helpers resolve to the "current" colour and
+% \setsteps has nothing left to do.
+\mode<handout>{%
+  \renewcommand{\setsteps}[1]{}%
+  \renewcommand{\uzh@stepcol}[1]{\color{uzh@stepcurrent}}%
+  \renewcommand{\uzh@resolvenotecolor}{%
+    \colorlet{uzh@stepcolor}{uzh@stepcurrent}}%
+  \renewcommand{\stepblockfade}[1]{\uzh@stepblockreset}%
+  \renewcommand{\steprangefade}[2]{\color{uzh@stepcurrent}}%
+  \renewcommand{\stepsetfade}[1]{\color{uzh@stepcurrent}}%
+  \renewcommand{\stepifpast}[4]{#4}%
+  \renewcommand{\stepsummary}[1]{{\color{uzh@stepcurrent}#1}}%
+}
+
+\mode
+<all>

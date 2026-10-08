@@ -1,0 +1,184 @@
+% UZH-styled A0 poster layer for plain `article` documents.
+%
+% Extracted from ds_phd_ws/2026/abn_poster.tex, the Data Science PhD workshop
+% poster, so that the next poster starts from content and not from a preamble.
+% Usage (see the README section "Poster template"):
+%
+%   \documentclass[10pt]{article}
+%   \usepackage{uzhposter}
+%   \usepackage{amsmath,amssymb}      % content-level packages stay yours
+%   \begin{document}
+%   \posterheader{Department ...}{My title}{Author\uzhsup{1}}{...affiliation...}
+%   \begin{posterbody}
+%     \postersection{First panel}
+%     ...
+%     \begin{posterblock}{A block title} ... \end{posterblock}
+%   \end{posterbody}
+%   \posterfooter{References ... \ |\ ...}
+%   \end{document}
+%
+% Build with a two-line Makefile pointing at this folder --
+%   TEMPLATE := ../../template/latex/poster
+%   include $(TEMPLATE)/Makefile
+% -- which selects the article-class mode (BEAMER=0). TEXINPUTS then resolves
+% this package from poster/ and img/uzh-logo.pdf plus uzhsetup.sty from the
+% template root, exactly as for the talks.
+%
+% Design decisions carried over from the workshop poster:
+% - Print-safe by construction: no overlays, no fading, no opacity. The
+%   absent-edge style mixes its colour into the stroke (uzhberry!60) instead
+%   of using opacity, which some printers flatten into grey boxes.
+% - beamerposter is not in this TeX tree, so the page is plain article +
+%   geometry at A0 portrait (841 x 1189 mm) with the font sizes redeclared
+%   for poster reading distance.
+% - The DAG styles restate uzhdag.sty scaled by ~2.8, the ratio of the poster
+%   body font (24 pt) to the slide footnotesize (8 pt). They keep the same
+%   names (dagnode, dagedge, dagabsent), so slide TikZ code pastes over.
+% - Header layout adapted from the UZH poster template (Overleaf
+%   ypwsnptqzmfy): all on white -- UZH logo top left, unit name in bold
+%   beside it, the title in UZH blue, then the author and affiliation lines.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{uzhposter}[2026/08/26 UZH A0 poster layer for article]
+
+\RequirePackage[paperwidth=841mm,paperheight=1189mm,margin=0mm]{geometry}
+% lmodern keeps a scalable typewriter font for the Rcode listings; Source
+% Sans Pro (the UZH corporate face, same as the beamer theme) then takes
+% over as the default text font.
+\RequirePackage{lmodern}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[default]{sourcesanspro}
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{booktabs}
+\RequirePackage{tikz}
+\RequirePackage{tcolorbox}
+\RequirePackage{fancyvrb}
+\usetikzlibrary{arrows.meta}
+% \uzhsup (the DM\uzhsup{3}L superscript geometry) and \fillimage; the
+% package is beamer-free and works in article documents.
+\RequirePackage{uzhsetup}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+% ---- font sizes for A0 reading distance -----------------------------------
+\renewcommand\normalsize{\@setfontsize\normalsize{24}{31}%
+  \abovedisplayskip 14pt plus 4pt minus 7pt
+  \belowdisplayskip \abovedisplayskip
+  \abovedisplayshortskip 8pt
+  \belowdisplayshortskip 10pt}
+\renewcommand\small{\@setfontsize\small{20}{26}}
+\renewcommand\footnotesize{\@setfontsize\footnotesize{18}{23}}
+\renewcommand\large{\@setfontsize\large{30}{38}}
+\renewcommand\Large{\@setfontsize\Large{40}{49}}
+\renewcommand\huge{\@setfontsize\huge{60}{70}}
+\renewcommand\Huge{\@setfontsize\Huge{88}{98}}
+\AtBeginDocument{\normalsize}
+
+% ---- UZH corporate colours -------------------------------------------------
+% Plain names (no @), because article documents have no easy way to use the
+% uzh@... names of the beamer colour theme. Values match
+% beamercolorthemeuzh.sty; uzhimathgrey is the I-Math header grey, uzhgreyD
+% the dark grey of the "chosen next" block (= uzh@grey4).
+\definecolor{uzhblue}{HTML}{0028A5}
+\definecolor{uzhcyan}{HTML}{4AC9E3}
+\definecolor{uzhapple}{HTML}{A4D233}
+\definecolor{uzhgold}{HTML}{FFC845}
+\definecolor{uzhorange}{HTML}{FC4C02}
+\definecolor{uzhberry}{HTML}{BF0D3E}
+\definecolor{uzhlightgrey}{HTML}{FAFAFA}
+\definecolor{uzhimathgrey}{HTML}{A3ADB7}
+\definecolor{uzhgreyD}{HTML}{4D4D4D}
+
+% ---- DAG styles: uzhdag.sty scaled for the poster --------------------------
+% dagabsent drops the opacity of the slide version on purpose: mixed colour
+% prints identically on every device, opacity does not.
+\tikzset{
+  dagnode/.style={circle, draw, line width=1.6pt, minimum size=2.6cm,
+                  inner sep=0pt, font=\small},
+  dagedge/.style={-{Stealth[length=6mm]}, line width=1.6pt},
+  dagabsent/.style={-{Stealth[length=6mm]}, line width=1.6pt, dashed,
+                    draw=uzhberry!60},
+}
+
+% ---- R code / console output -----------------------------------------------
+% Framed in the I-Math grey; use it for code and for pasted console output.
+\DefineVerbatimEnvironment{Rcode}{Verbatim}{fontsize=\small,
+  frame=single, rulecolor=\color{uzhimathgrey}, framerule=1.2pt,
+  framesep=4mm}
+
+% ---- poster building blocks -------------------------------------------------
+% Blocks in the I-Math manner: grey title bar (uzhimathgrey) with black title
+% text over an almost white body. The optional argument takes tcolorbox
+% overrides, e.g. a dark emphasis block:
+%   \begin{posterblock}[colbacktitle=uzhgreyD, coltitle=white,
+%       colframe=uzhgreyD]{Chosen next} ... \end{posterblock}
+\newtcolorbox{posterblock}[2][]{%
+  colback=uzhlightgrey, colframe=uzhimathgrey,
+  colbacktitle=uzhimathgrey, coltitle=black,
+  fonttitle=\large\bfseries,
+  boxrule=1.5pt, arc=5mm,
+  left=9mm, right=9mm, top=5mm, bottom=5mm,
+  toptitle=3mm, bottomtitle=3mm,
+  title={#2}, #1}
+
+% Section head: black heading over the I-Math grey rule.
+\newcommand{\postersection}[1]{%
+  {\Large\bfseries #1}\par
+  \vspace{3mm}{\color{uzhimathgrey}\rule{\linewidth}{3pt}}\par
+  \vspace{8mm}}
+
+% booktabs rules and cell padding at poster scale
+\setlength{\heavyrulewidth}{2.5pt}
+\setlength{\lightrulewidth}{1.2pt}
+\setlength{\tabcolsep}{14pt}
+\renewcommand{\arraystretch}{1.3}
+
+% ---- page skeleton ----------------------------------------------------------
+% The content column: the paper width minus a 30mm margin on each side. The
+% geometry margin stays 0 so the footer band can bleed to the page edges;
+% header and body centre this column instead.
+\newcommand{\posterbodywidth}{781mm}
+
+% Header, all on white: logo top left, the unit name in bold beside it, the
+% title in UZH blue, then the author and affiliation lines.
+%   \posterheader{<unit>}{<title>}{<authors>}{<affiliation>}
+\newcommand{\posterheader}[4]{%
+  \vspace*{14mm}
+  \begin{center}
+  \begin{minipage}{\posterbodywidth}
+    \begin{minipage}[c]{0.26\linewidth}
+      \includegraphics[width=150mm]{img/uzh-logo.pdf}%
+    \end{minipage}%
+    \begin{minipage}[c]{0.72\linewidth}
+      \large\bfseries #1%
+    \end{minipage}
+
+    \vspace{14mm}
+    {\fontsize{68}{82}\selectfont\bfseries\color{uzhblue}#2\par}
+    \vspace{6mm}
+    {\large #3\par}
+    \vspace{2mm}
+    {\footnotesize #4\par}
+  \end{minipage}
+  \end{center}
+  \vspace{10mm}}
+
+% The panels go inside this environment, which centres the content column.
+\newenvironment{posterbody}
+  {\begin{center}\begin{minipage}{\posterbodywidth}}
+  {\end{minipage}\end{center}}
+
+% Footer band in the I-Math grey, bleeding to the page edges; it is pushed to
+% the bottom of the page by its own \vfill. Separate entries with \ |\ .
+\newcommand{\posterfooter}[1]{%
+  \vfill
+  {\setlength{\fboxsep}{0pt}%
+  \colorbox{uzhimathgrey}{%
+    \begin{minipage}{\paperwidth}
+      \vspace{6mm}
+      \begin{center}\footnotesize #1\end{center}
+      \vspace{6mm}
+    \end{minipage}}}}
+
+\endinput

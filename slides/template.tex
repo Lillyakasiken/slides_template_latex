@@ -6,26 +6,29 @@
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{uzhcode} % UZH-styled source-code listings + \cmd / \env helpers
+\usepackage{uzhdag}  % TikZ styles for Bayesian-network / DAG diagrams
 
-% Bibliography item marker as [1], [2], ... (instead of the default icon)
-\setbeamertemplate{bibliography item}[text]
+% In-text \cite marks become small, raised and grey -- pointers, not content.
+% The reference list keeps its normal size. Remove the line for plain [1].
+\uzhtinycites
 
 \title{A Beamer Theme for the University of Zurich}
 \subtitle{THU-style features in the UZH corporate design}
 \author{Hans Muster}
 \date{\today}
+% The institute goes in the title-page header (it wraps by itself -- do not
+% put \\ in it). The footline shows the UZH / DM3L wordmark instead of the
+% university and institute names, so \institute no longer appears there.
 \institute{Department of XYZ}
 \occasion{1st Committee Meeting} % purpose of the talk, shown in the footline
-\titlegraphic{img/uzh-lake.jpg}
+\titlegraphic{img/math_institute.jpg}
 
 \begin{document}
 
 \maketitle
 
-\begin{frame}{Outline}
-  \setlength{\parskip}{\uzhtocparskip}
-  \tableofcontents
-\end{frame}
+% Overview slide: sections only (see \uzhoutlineframe in uzhnavigation.sty)
+\uzhoutlineframe
 
 
 \section{Introduction}
@@ -62,6 +65,32 @@
 
   \stepsummary{Use \texttt{\textbackslash pause} or \texttt{[<+->]} for a plain
     reveal.}
+\end{frame}
+
+\begin{frame}{\steptitle{Stepping through blocks and prose}}
+  % \setsteps{1} puts the closing all-black overlay at 1+3 = 4, which gives the
+  % three content overlays this frame uses.
+  \setsteps{1}
+  \begin{columns}[T]
+    \begin{column}{0.47\textwidth}
+      \uncover<2->{{\stepblockfade{2}%
+      \begin{block}{\texttt{\textbackslash stepblockfade}}
+        Fades a whole block. It is a box, so reveal it with
+        \texttt{\textbackslash uncover}.
+      \end{block}}}
+    \end{column}
+    \begin{column}{0.47\textwidth}
+      \onslide<3->%
+      {\steptextfade{3}%
+      \texttt{\textbackslash steptextfade} fades plain prose, and display math
+      goes with it:
+      \[ a^2 + b^2 = c^2 \]
+      Reveal prose with \texttt{\textbackslash onslide}, because
+      \texttt{\textbackslash uncover} breaks display math.}
+    \end{column}
+  \end{columns}
+
+  \stepsummary{Both helpers only set the colour; you choose the overlay.}
 \end{frame}
 
 \subsection{Colours}
@@ -115,6 +144,39 @@
     \end{column}
     \begin{column}{0.34\textwidth}
       \fillimage[alt={A staircase at UZH}]{\textwidth}{6cm}{img/uzh-staircase.jpg}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\subsection{DAG diagrams}
+
+\begin{frame}{Bayesian-network diagrams}
+  Load \texttt{uzhdag} for TikZ styles in the UZH palette: \texttt{dagnode},
+  \texttt{dagedge} and \texttt{dagabsent} (dashed berry $=$ absent edge).
+
+  \begin{columns}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \begin{tikzpicture}[x=2.1cm, y=1.6cm]
+        \node[dagnode] (am) at (0,0)  {$a_{t-1}$};
+        \node[dagnode] (bm) at (0,-1) {$b_{t-1}$};
+        \node[dagnode] (a0) at (1,0)  {$a_{t}$};
+        \node[dagnode] (b0) at (1,-1) {$b_{t}$};
+        \draw[dagedge]   (am) -- (a0);
+        \draw[dagedge]   (bm) -- (b0);
+        \draw[dagedge, line width=2pt] (am) -- (bm);
+        \draw[dagabsent] (am) -- (b0);
+        \draw[dagabsent] (bm) -- (a0);
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.52\textwidth}
+      \begin{itemize}
+        \item solid arrow: a present edge
+        \item dashed berry arrow: an absent edge --- ``missing arrows are
+          the information''
+        \item extra TikZ options compose, e.g.\
+          \texttt{line width=2pt} for a strong coefficient
+      \end{itemize}
     \end{column}
   \end{columns}
 \end{frame}
@@ -206,19 +268,44 @@ def fib(n):
 
 \section{References}
 
-\begin{frame}[allowframebreaks]{References}
-  \nocite{*} % list every entry in ref.bib, even the uncited ones
-  \bibliographystyle{abbrv}
-  \bibliography{ref}
-\end{frame}
+\nocite{*} % list every entry in ref.bib, even the uncited ones
 
-\begin{frame}
-  \begin{center}
-    {\usebeamerfont{title}\usebeamercolor[fg]{title}\Huge Thank you!}
+% The reference list on one slide, in two columns. Write \uzhbibframe[1]{ref}
+% for a single column, or a plain frame with [allowframebreaks] if the list is
+% too long for one slide.
+\uzhbibframe{ref}
 
-    \vskip1cm
-    \normalsize Questions?
-  \end{center}
+% The closing page. Rename either line with \renewcommand{\uzhthanksname}{...}
+% or \renewcommand{\uzhquestionsname}{...} in the preamble.
+\uzhthanksframe
+
+
+% ===========================================================================
+% Appendix -- pages that are kept for a question and are not walked through.
+% \appendix opens a new part, thus these frames stay out of the table of
+% contents of the opening overview. \section* names the part in the navigation
+% bar without adding a contents entry.
+%
+% The footline counts these frames on their own ("3 / 4" and not "34 / 37"),
+% and the navigation bar carries a button that jumps back to the opening
+% overview -- from there every entry is a link into the talk.
+% ===========================================================================
+\appendix
+\section*{Appendix}
+
+\begin{frame}{A page kept for a question}
+  A frame after \texttt{\textbackslash appendix} is shown only if somebody
+  asks for it.
+
+  \begin{itemize}
+    \item The footline counts the appendix frames from 1 again
+    \item The navigation bar shows a \emph{Contents} button at its right end
+    \item The button jumps to the opening overview, and every entry there is a
+      link --- thus two clicks reach any part of the talk
+  \end{itemize}
+
+  Rename the button with
+  \texttt{\textbackslash renewcommand\{\textbackslash uzhtocbuttonname\}\{Overview\}}.
 \end{frame}
 
 \end{document}

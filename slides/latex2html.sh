@@ -25,5 +25,14 @@ sed -e 's/\\begin\s*{frame}\s*{\([^}]*\)}\s*{\([^}]*\)}/\\begin{frame}\n\\framet
     -e 's/\\imagecard\s*{\([^}]*\)}\s*{\([^}]*\)}\s*{\([^}]*\)}/\\includegraphics[alt={\2}]{\1} \\\\ \\textbf{\2} \\\\ \3/g' \
     "$1" > "$tmpfile"
 
+# Pandoc does not use kpathsea, so TEXINPUTS does not help it find the theme's
+# images when building a talk that lives outside the template directory.
+# --resource-path gives it the same two places to look, so --embed-resources can
+# actually inline them. The script's own directory is the template directory.
+templatedir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+srcdir="$(cd "$(dirname "$1")" && pwd)"
+
 # Convert to HTML
-pandoc "$tmpfile" -f latex -t html --standalone --embed-resources --mathjax > "${1%.tex}.html"
+pandoc "$tmpfile" -f latex -t html --standalone --embed-resources --mathjax \
+    --resource-path="$srcdir:$srcdir/img:$templatedir:$templatedir/img" \
+    > "${1%.tex}.html"

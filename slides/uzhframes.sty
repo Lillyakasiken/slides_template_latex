@@ -1,0 +1,75 @@
+\ProvidesPackage{uzhframes}
+% Ready-made frames that almost every talk ends with: the reference list and
+% the closing "Thank you!" page. Both were copied by hand from deck to deck;
+% they live here so that a talk keeps only its content.
+%
+%   \uzhbibframe{ref}      the reference list, two columns, on one slide
+%   \uzhthanksframe        the closing page
+%
+% The package is loaded by the theme -- do not load it in a talk.
+
+\mode<presentation>
+
+\RequirePackage{multicol}
+
+% --- The reference list ----------------------------------------------------
+% One slide, two columns, small type: the list is read from the audience
+% floor, it is not walked through. Change any of the four settings below in
+% the preamble of the talk, e.g.
+%   \renewcommand{\uzhbibstyle}{plain}
+%   \renewcommand{\uzhbibfont}{\tiny}
+%
+% Put a plain frame with [allowframebreaks] in the talk instead if the list is
+% too long for one slide.
+\providecommand{\uzhbibname}{References}
+\providecommand{\uzhbibstyle}{abbrv}
+\providecommand{\uzhbibfont}{\scriptsize}
+
+% #1 the number of columns (1 gives a single column), #2 the .bib file
+\newcommand{\uzh@bibbody}[2]{%
+  \uzhbibfont
+  % The entry marker is the entry number, thus it agrees with what \cite
+  % prints in the slide body.
+  \setbeamertemplate{bibliography item}[text]%
+  % multicol keeps \premulticols of height free before it starts a new set of
+  % columns. A slide has no next page to move to, thus the reserve is dropped
+  % and the columns are left ragged at the bottom.
+  \setlength{\premulticols}{0pt}%
+  \setlength{\multicolsep}{0pt}%
+  \raggedcolumns
+  \ifnum#1>1\relax
+    \begin{multicols}{#1}%
+  \fi
+  \bibliographystyle{\uzhbibstyle}%
+  \bibliography{#2}%
+  \ifnum#1>1\relax
+    \end{multicols}%
+  \fi
+}
+
+% \uzhbibframe[<columns>]{<bib file>} -- the default is two columns:
+%   \uzhbibframe{ref}
+\newcommand{\uzhbibframe}[2][2]{%
+  \begin{frame}{\uzhbibname}%
+    \uzh@bibbody{#1}{#2}%
+  \end{frame}%
+}
+
+% --- The closing page ------------------------------------------------------
+% Two centred lines in the title colour. Rename either line in the preamble:
+%   \renewcommand{\uzhthanksname}{Danke!}
+\providecommand{\uzhthanksname}{Thank you!}
+\providecommand{\uzhquestionsname}{Questions?}
+
+\newcommand{\uzhthanksframe}{%
+  \begin{frame}
+    \begin{center}
+      {\usebeamerfont{title}\usebeamercolor[fg]{title}\Huge\uzhthanksname}%
+      \par\vskip1cm
+      \normalsize\uzhquestionsname
+    \end{center}%
+  \end{frame}%
+}
+
+\mode
+<all>

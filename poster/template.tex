@@ -1,0 +1,199 @@
+% Demo poster for uzhposter.sty: one A0 portrait page that shows every
+% building block of the layer -- header, panels, blocks, colours, DAG styles,
+% R code, tables and the footer band. Build it here with `make`; a real
+% poster lives in its own directory with a two-line Makefile pointing at this
+% folder (ds_phd_ws/2026/ is a working example).
+\documentclass[10pt]{article}
+\usepackage{uzhposter} % resolved from template/latex/poster via TEXINPUTS
+\usepackage{amsmath,amssymb}
+
+% A colour swatch for the palette panel: a filled box with the name below it
+\newcommand{\swatch}[1]{%
+  \begin{minipage}[t]{0.15\linewidth}
+    \centering
+    {\setlength{\fboxsep}{0pt}\colorbox{#1}{\rule{0pt}{22mm}\hspace{\linewidth}}}\\[2mm]
+    \footnotesize\texttt{#1}%
+  \end{minipage}}
+
+\begin{document}
+
+\posterheader
+  {Department of XYZ}
+  {An A0 Poster Layer for the University of Zurich}
+  {Martha Muster\textsuperscript{1}, Hans Muster\textsuperscript{1}}
+  {\textsuperscript{1}Department of XYZ, University of Zurich ---
+   the header takes unit, title, authors and affiliation; the logo comes
+   from the shared \texttt{img/} directory}
+
+\begin{posterbody}
+
+% ============================ panel 1 ======================================
+\postersection{What this layer gives you}
+
+\begin{minipage}[c]{0.60\linewidth}
+  \texttt{uzhposter.sty} turns a plain \texttt{article} document into an A0
+  portrait poster in the UZH corporate design. It is print-safe by
+  construction: no overlays, no opacity, every element at full strength.
+
+  \vspace{4mm}
+  \begin{itemize}
+    \setlength{\itemsep}{2mm}
+    \item \textbf{Page and type}: A0 portrait geometry, Source Sans Pro, and
+      the standard size commands (\texttt{\textbackslash small} \ldots\
+      \texttt{\textbackslash Huge}) redeclared for poster reading distance
+    \item \textbf{Skeleton}: \texttt{\textbackslash posterheader},
+      \texttt{posterbody}, \texttt{\textbackslash postersection},
+      \texttt{\textbackslash posterfooter} --- the page you are reading
+    \item \textbf{Blocks}: \texttt{posterblock} boxes in the I-Math grey,
+      with \texttt{tcolorbox} overrides for emphasis (panel below)
+    \item \textbf{Figures}: the \texttt{uzhdag} TikZ styles at poster scale,
+      an \texttt{Rcode} verbatim environment, and \texttt{\textbackslash
+      fillimage} for cropped photos (right)
+    \item \textbf{Helpers} from \texttt{uzhsetup}, e.g.\ the
+      DM\uzhsup{3}L superscript geometry via
+      \texttt{\textbackslash uzhsup}
+  \end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.36\linewidth}
+  \begin{center}
+    \fillimage[alt={A lecture hall at UZH}]{\linewidth}{200mm}{img/uzh-city.jpg}
+
+    \vspace{2mm}
+    {\footnotesize \texttt{\textbackslash fillimage}: cropped to exactly
+     this width and height, never stretched}
+  \end{center}
+\end{minipage}
+
+\vspace{12mm}
+
+% ============================ panel 2 ======================================
+\postersection{Building blocks}
+
+% The \vspace{0pt} after each [t] minipage pins its top to the row: a
+% minipage[t] otherwise aligns on the baseline of its first box, and a
+% tcolorbox carries its baseline at the bottom -- the three columns would
+% stagger.
+\begin{minipage}[t]{0.31\linewidth}\vspace{0pt}
+  \begin{posterblock}{A plain posterblock}
+    Grey title bar, almost white body. Math and tables scale with the
+    poster fonts:
+    \[
+      g_j\bigl(\mathrm{E}[X_j \mid \mathbf{Pa}_j]\bigr)
+      \;=\; \beta_{0j} + \sum_{X_i \in \mathbf{Pa}_j} \beta_{ij}\, X_i
+    \]
+    \begin{center}
+      \small
+      \begin{tabular}{lcc}
+        \toprule
+        Method & Accuracy & Runtime \\
+        \midrule
+        Baseline      & 0.81 & 14.2\,ms \\
+        \textbf{Ours} & \textbf{0.95} & \textbf{9.8\,ms} \\
+        \bottomrule
+      \end{tabular}
+    \end{center}
+  \end{posterblock}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.31\linewidth}\vspace{0pt}
+  \begin{posterblock}{DAG styles at poster scale}
+    Same names as on the slides (\texttt{dagnode}, \texttt{dagedge},
+    \texttt{dagabsent}), so slide TikZ code pastes over:
+    \begin{center}
+    \begin{tikzpicture}[x=4.8cm, y=4.0cm]
+      \node[dagnode] (am) at (0,0)  {$a_{t-1}$};
+      \node[dagnode] (bm) at (0,-1) {$b_{t-1}$};
+      \node[dagnode] (a0) at (1,0)  {$a_{t}$};
+      \node[dagnode] (b0) at (1,-1) {$b_{t}$};
+      \draw[dagedge]  (am) -- (a0);
+      \draw[dagedge]  (bm) -- (b0);
+      \draw[dagedge, line width=3.6pt] (am) -- (bm);
+      \draw[dagabsent] (am) -- (b0);
+      \draw[dagabsent] (bm) -- (a0);
+    \end{tikzpicture}
+    \end{center}
+    {\footnotesize dashed berry $=$ absent edge; extra options compose,
+     e.g.\ \texttt{line width} for a strong coefficient}
+  \end{posterblock}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.31\linewidth}\vspace{0pt}
+  \begin{posterblock}{R code and console output}
+    The \texttt{Rcode} environment frames verbatim text in the I-Math grey:
+    \begin{Rcode}
+fit <- fitAbn(object = mp,
+              method = "mle")
+> fit$coef$c
+  c|intercept          b
+     2.417129 -0.3101488
+    \end{Rcode}
+  \end{posterblock}
+
+  \vspace{6mm}
+  \begin{posterblock}[colbacktitle=uzhgreyD, coltitle=white,
+      colframe=uzhgreyD]{An emphasis block}
+    The optional argument takes \texttt{tcolorbox} overrides --- here a dark
+    title bar for the take-home message.
+  \end{posterblock}
+\end{minipage}
+
+\vspace{12mm}
+
+% ============================ panel 3 ======================================
+\postersection{The UZH palette}
+
+The corporate colours carry plain names (article documents cannot easily use
+the \texttt{uzh@\ldots} names of the beamer theme); \texttt{uzhimathgrey} is
+the grey of the rules, bars and the footer band:
+
+\vspace{5mm}
+\begin{center}
+  \swatch{uzhblue}\hfill \swatch{uzhcyan}\hfill \swatch{uzhapple}\hfill
+  \swatch{uzhgold}\hfill \swatch{uzhorange}\hfill \swatch{uzhberry}
+\end{center}
+
+\vspace{12mm}
+
+% ============================ panel 4 ======================================
+\postersection{Start your own poster}
+
+\begin{minipage}[t]{0.47\linewidth}\vspace{0pt}
+  \begin{posterblock}{1. The two-line Makefile}
+    Create a directory with just your \texttt{.tex} and this
+    \texttt{Makefile}; nothing from the template is copied:
+    \begin{Rcode}
+TEMPLATE := ../../template/latex/poster
+include $(TEMPLATE)/Makefile
+    \end{Rcode}
+    \texttt{make} builds the poster PDF, \texttt{make watch} rebuilds on
+    every save, \texttt{make clean} drops the artifacts. The beamer-only
+    targets (\texttt{draft}, \texttt{short}, \texttt{frames}) are off.
+  \end{posterblock}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\linewidth}\vspace{0pt}
+  \begin{posterblock}{2. The document skeleton}
+    \begin{Rcode}
+\documentclass[10pt]{article}
+\usepackage{uzhposter}
+\begin{document}
+\posterheader{Unit}{Title}{Authors}{Affiliation}
+\begin{posterbody}
+  \postersection{First panel}
+  \begin{posterblock}{A block} ... \end{posterblock}
+\end{posterbody}
+\posterfooter{Reference one \ |\ Reference two}
+\end{document}
+    \end{Rcode}
+  \end{posterblock}
+\end{minipage}
+
+\end{posterbody}
+
+\posterfooter{%
+  \texttt{\textbackslash posterfooter}: the reference band, bleeding to the
+  page edges.
+  \ |\
+  Muster, M.\ and Muster, H.\ (2026). A poster layer for UZH.
+  \emph{J.\ of Reproducible Posters} 1(1).
+  \ |\
+  Built with \texttt{make} in \texttt{template/latex/poster/}.}
+
+\end{document}

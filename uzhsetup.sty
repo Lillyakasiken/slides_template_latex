@@ -24,6 +24,59 @@
 \newcommand{\occasion}[1]{\renewcommand{\uzh@occasion}{#1}}
 \newcommand{\insertoccasion}{\uzh@occasion}
 
+% Superscript for names such as DM^3L. It reproduces the geometry the DM3L
+% website gives to <sup> in "DM<sup>3</sup>L", so the printed name matches
+% https://dm3l.uzh.ch. The site inherits Bootstrap's reboot rule
+%
+%   sub,sup { font-size: 75%; line-height: 0; position: relative;
+%             vertical-align: baseline; }
+%   sup     { top: -.5em; }
+%
+% and it sets the same typeface the theme uses, Source Sans Pro, so the two
+% render alike. Both numbers below are therefore fractions of 1 em of the
+% SURROUNDING text: \uzh@supscale is the CSS font-size, and \uzh@supraise is the
+% CSS top -- halved again, because a CSS em resolves against the element's own
+% font size, which the 75% rule has already reduced (0.5 x 0.75 = 0.375).
+%
+% Working in em also keeps one macro right at every size, from the 5pt footline
+% to the title. \textsuperscript cannot do this: it uses the fixed math-script
+% size \sf@size and a math-mode rise, which put the digit both larger and higher
+% than the website does.
+\def\uzh@supscale{0.75}
+\def\uzh@supraise{0.375}
+\newlength{\uzh@supem}
+\newlength{\uzh@supsize}
+\DeclareRobustCommand{\uzhsup}[1]{%
+  \setlength{\uzh@supem}{\dimexpr\f@size pt\relax}%
+  \setlength{\uzh@supsize}{\uzh@supscale\uzh@supem}%
+  \raisebox{\uzh@supraise\uzh@supem}{%
+    \fontsize{\uzh@supsize}{\uzh@supsize}\selectfont#1}%
+}
+
+% In-text citation marks are pointers, not content. \uzhtinycites (opt-in,
+% call it once in the preamble) prints them small, raised and grey, so they
+% stop competing with the words:
+%   \uzhtinycites
+% The reference list keeps the normal size, because \cite is not used inside
+% it. uzh@grey3 is the palette shade closest to a 65% grey.
+\newcommand{\uzhtinycites}{%
+  \let\uzh@origcite\cite
+  \renewcommand{\cite}[1]{%
+    \raisebox{0.5ex}{\tiny\textcolor{uzh@grey3}{\uzh@origcite{##1}}}}%
+}
+
+% Tighter space around displayed formulas, for a column or a slide that holds
+% more than one display and would otherwise run past the bottom:
+%   \uzhtightmath{3pt}{6pt}      above, below
+% The short skips -- used when the display follows a short line -- follow at
+% two thirds of the two values. \dagtightmath (uzhdag) is the DAG-slide preset.
+\newcommand{\uzhtightmath}[2]{%
+  \setlength{\abovedisplayskip}{#1}%
+  \setlength{\belowdisplayskip}{#2}%
+  \setlength{\abovedisplayshortskip}{0.667\abovedisplayskip}%
+  \setlength{\belowdisplayshortskip}{0.667\belowdisplayskip}%
+}
+
 \newlength{\uzh@oW}
 \newlength{\uzh@oH}
 \newlength{\uzh@rW}

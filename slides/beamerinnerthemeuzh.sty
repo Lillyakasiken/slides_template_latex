@@ -8,6 +8,13 @@
 \defbeamertemplate*{itemize subitem}{uzh}{\usebeamerfont*{itemize subitem}\hbox{---}}
 \defbeamertemplate*{itemize subsubitem}{uzh}{\usebeamerfont*{itemize subsubitem}\hbox{---}}
 
+% Reference-list marker: the entry number in brackets ([1], [2], ...), not the
+% default article icon. The number is what \cite prints in the slide body, so
+% the marker and the citation mark agree. Put
+%   \setbeamertemplate{bibliography item}[triangle]
+% in your preamble to get an icon back.
+\setbeamertemplate{bibliography item}[text]
+
 \newlength{\uzh@tgheight}%
 \defbeamertemplate*{title page}{uzh}{
   \thispagestyle{navigation@titlepage}%

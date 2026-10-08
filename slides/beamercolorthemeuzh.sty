@@ -58,8 +58,17 @@
 \setbeamercolor{structure}{fg=black}
 
 % Blocks in UZH corporate colors (THU-style coloured blocks).
-\setbeamercolor{block title}{bg=uzh@blue,fg=white}
-\setbeamercolor{block body}{bg=uzh@lightgrey2,fg=black}
+%
+% The plain block is the quiet one: a pale blue title bar (uzh@blue1) over an
+% almost white body (uzh@lightgrey1). A slide can carry four of these side by
+% side without the blocks shouting louder than the words in them. The title
+% text is dark blue, not white, because white on uzh@blue1 gives a contrast
+% ratio of about 1.6:1 and is not readable; uzh@blue4 gives about 8.6:1.
+% For the strong bar of the UZH corporate design, put this in your preamble:
+%   \setbeamercolor{block title}{bg=uzh@blue,fg=white}
+%   \setbeamercolor{block body}{bg=uzh@lightgrey2,fg=black}
+\setbeamercolor{block title}{bg=uzh@blue1,fg=uzh@blue4}
+\setbeamercolor{block body}{bg=uzh@lightgrey1,fg=black}
 \setbeamercolor{block title example}{bg=uzh@apple4,fg=white}
 \setbeamercolor{block body example}{bg=uzh@apple1,fg=black}
 \setbeamercolor{block title alerted}{bg=uzh@berry,fg=white}

@@ -1,0 +1,43 @@
+% Vector redraw of UZH_dm3l.jpeg: the UZH / DM3L wordmark, sharp at any size.
+% The layout copies the bitmap: "UZH" (black) over "DM3L" (dark berry), both
+% words scaled to the same width, with the superscript 3 in the \uzhsup
+% geometry of the theme (75% size, raised 0.375 em -- the dm3l.uzh.ch rule).
+% Font and colours match the theme: Source Sans Pro bold, black and
+% uzh@berry4 (#8F0A2E, the modal colour of the bitmap's lower word).
+%
+% The base `minimal` class plus a raw \shipout gives a page cropped to the
+% mark without the `standalone` class, which not every TeX install has.
+%
+% Rebuild (from this img/ directory):
+%   pdflatex UZH_dm3l.tex && rm -f UZH_dm3l.aux UZH_dm3l.log
+\documentclass{minimal}
+\usepackage[default]{sourcesanspro}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\definecolor{dmberry}{HTML}{8F0A2E} % = uzh@berry4
+
+% Both words on a common width, as in the bitmap. The absolute number only
+% sets the internal scale of the vector, not the size on the slide.
+\newcommand{\logoline}[1]{\resizebox{30mm}{!}{#1}}
+
+% \uzhsup geometry at the 10pt base size: 7.5pt digit, raised 3.75pt
+\newcommand{\logosup}[1]{%
+  \raisebox{3.75pt}{\fontsize{7.5pt}{7.5pt}\selectfont#1}}
+
+\newsavebox{\logobox}
+
+\begin{document}
+\sbox{\logobox}{\bfseries\vbox{%
+  \hbox{\logoline{UZH}}%
+  \vskip 8mm
+  \hbox{\logoline{\color{dmberry}DM\logosup{3}L}}%
+}}
+% Page = the mark plus a 1pt border; \shipout puts the box at the page origin
+% (offset by TeX's built-in 1in) with no page furniture around it.
+\pdfpagewidth=\dimexpr\wd\logobox+2pt\relax
+\pdfpageheight=\dimexpr\ht\logobox+\dp\logobox+2pt\relax
+\hoffset=\dimexpr-1in+1pt\relax
+\voffset=\dimexpr-1in+1pt\relax
+\shipout\hbox{\usebox{\logobox}}
+\end{document}
