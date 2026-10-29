@@ -11,15 +11,29 @@
 %
 % All styles accept extra TikZ options, e.g. a coefficient-strength edge:
 %   \draw[dagedge, line width=2pt] (a) -- (b);
+%
+% Further down, for a talk that shows abn data and abn results:
+%   - abn node shapes, one per distribution, and data-type icons for a table
+%     of the variables (\nodeicon, \varrow)
+%   - arrow and coefficient styles for a hypothesis DAG and a fitted DAG
+%     (\cf, \gtype, \readas)
+%   - overlay keys for TikZ (alt, visible on) and the step fade for a DAG
+%     (step on, step node)
+%   - time slices for a tsABN figure (\tsslice, lag, same, ts snapshot)
+% The overlay keys and the step fade need beamer and uzhnavigation.sty.
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{uzhdag}[2026/08/25 TikZ styles for Bayesian-network DAGs]
+\ProvidesPackage{uzhdag}[2026/10/29 TikZ styles for Bayesian-network DAGs]
 
 \RequirePackage{tikz}
 \RequirePackage{uzhsetup}   % \uzhtightmath, used by \dagtightmath below
-\usetikzlibrary{arrows.meta}
+\usetikzlibrary{arrows.meta, backgrounds, shapes.geometric}
 
 % Fallback so the package also works outside the uzh beamer theme
 \providecolor{uzh@berry}{HTML}{BF0D3E}
+\providecolor{uzh@blue}{HTML}{0028A5}
+\providecolor{uzh@imathgrey}{rgb}{0.639216,0.678431,0.717647}
+\providecolor{uzh@lightgrey1}{HTML}{FAFAFA}
+\providecolor{uzh@steppast}{HTML}{D7D7D7}
 
 \tikzset{
   dagnode/.style={circle, draw, semithick, minimum size=0.92cm, inner sep=0pt,
@@ -113,3 +127,205 @@
    \noindent\hspace*{\dagmathindent}%
    $\begin{alignedat}{3}}
   {\end{alignedat}$\par\addvspace{\belowdisplayskip}}
+
+% ===========================================================================
+% abn data and abn results
+% ===========================================================================
+
+% --- Node shapes -----------------------------------------------------------
+% One shape per distribution, as plot(mp) of the abn R package draws them:
+%   abngauss  circle     Gaussian (continuous)
+%   abnbin    rectangle  binomial (binary)
+%   abnpois   ellipse    Poisson (count)
+%   abnmult   diamond    multinomial (category)
+%   \node[abngauss] (ab) at (0,0) {ABETA};
+\tikzset{
+  abnnode/.style={draw, semithick, fill=uzh@blue!10, inner sep=1.5pt,
+                  font=\fontsize{6}{7}\selectfont},
+  abngauss/.style={abnnode, circle, minimum size=0.78cm},
+  abnbin/.style={abnnode, rectangle, minimum height=0.45cm},
+  abnpois/.style={abnnode, ellipse, minimum height=0.45cm},
+  abnmult/.style={abnnode, diamond, aspect=1.6, inner sep=1pt},
+}
+
+% --- Arrow styles ----------------------------------------------------------
+% A hypothesis DAG (the DAG the data are simulated from, or the DAG of the
+% literature):
+%   hyplit    an arrow from the literature
+%   hypass    an arrow that is a modelling assumption (dashed)
+% A DAG that abn learns, compared with the hypothesis DAG:
+%   abnkey=<width>  an arrow of the hypothesis DAG; the width shows the
+%                   strength, e.g. 0.4pt + 2pt * |beta|, at most 2pt
+%   abnminor        an arrow that abn adds and the hypothesis does not have
+%   abnmiss         an arrow of the hypothesis that abn misses or reverses
+\tikzset{
+  hyplit/.style={dagedge, draw=uzh@blue, line width=1.4pt},
+  hypass/.style={dagedge, draw=uzh@blue, line width=0.9pt, dashed},
+  abnkey/.style={dagedge, draw=uzh@blue, line width=#1},
+  abnkey/.default=1.4pt,
+  abnminor/.style={dagedge, draw=black!35},
+  abnmiss/.style={dagedge, draw=uzh@berry, line width=1.2pt},
+}
+
+% --- Coefficients on the arrows --------------------------------------------
+% A node on the path of an arrow, at its middle:
+%   \draw[abnkey=2pt] (ab) -- (pt) node[coef, above right] {$-0.81$};
+%   coef       the coefficient of an arrow, blue
+%   coefkey    the coefficient of an arrow that is also in a table: bold, black
+%   coefminor  the coefficient of an abnminor arrow, grey
+%   coefmiss   the coefficient of an abnmiss arrow, berry
+\tikzset{
+  coef/.style={midway, inner sep=0.8pt, text=uzh@blue, align=center,
+               font=\fontsize{6}{7}\selectfont},
+  coefkey/.style={coef, text=black,
+                  font=\fontsize{6}{7}\selectfont\bfseries\boldmath},
+  coefminor/.style={coef, text=black!50},
+  coefmiss/.style={coef, text=uzh@berry},
+}
+
+% \cf[<overlay>]{<sign>}{<number>}: the sign of a coefficient first, the
+% number from <overlay> on (default 4). Thus a frame can show the direction
+% of each arrow before the estimates.
+%   node[coef, above right] {\cf{$-$}{$-0.81$}}
+\newcommand{\cf}[3][4]{\alt<#1->{#3}{#2}}
+
+% A table of arrows and their coefficients. \gtype puts the GLM type at the
+% right end of the arrow cell, \readas is a grey line under a row that says
+% how to read the number. The table has two columns:
+%   ABETA $\to$ PTAU \gtype{Gaussian $\to$ Gaussian} & $-0.81$ (0.02) \\
+%   \readas{$-0.81$ SD of PTAU per SD of ABETA} \\[3pt]
+\newcommand{\gtype}[1]{\hfill{\tiny\textcolor{black!55}{#1}}\quad}
+\newcommand{\readas}[1]{%
+  \multicolumn{2}{@{}p{0.96\linewidth}@{}}{\textcolor{black!60}{#1}}}
+
+% --- Overlays in a TikZ picture --------------------------------------------
+% alt=<spec>{keys a}{keys b} uses keys a on the overlays of spec and keys b on
+% the other overlays. visible on=<spec> draws a part only on those overlays,
+% but its nodes keep their place, thus the picture does not move:
+%   \node[abnbin, visible on=<3->] (sex) at (2,-1) {PTGENDER};
+%   \draw[abnkey, alt=<2>{draw=uzh@berry}{}] (dx) -- (faq);
+\tikzset{
+  alt/.code args={<#1>#2#3}{\alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}}},
+  invisible/.style={opacity=0, text opacity=0},
+  visible on/.style={alt={#1{}{invisible}}},
+}
+
+% --- The step fade for a DAG -----------------------------------------------
+% The fade rules of uzhnavigation.sty, for a part of a picture. A \color does
+% not reach a TikZ style that carries its own colour, thus these keys switch
+% the styles to grey instead. All need \setsteps at the top of the frame.
+%
+%   steppast           every style of this package in grey; a talk adds its
+%                      own styles with steppast/.append style={...}
+%   step fade=<k>      grey while a step after k is current (\steptextfade)
+%   step on=<k>        comes up on step k and greys after it
+%   step keep=<list>   black on the overlays of the list only (\stepsetfade)
+%   step node={<k>}{<list>}
+%                      a node that comes up on step k and is black on the
+%                      overlays of the list: its own step, and each later
+%                      step with an arrow at it
+%
+%   \node[step node={1}{1,3}, abngauss] (hip) at (1.4,-3) {HIPPO};
+%   \begin{scope}[step on=2]
+%     \draw[hypass] (apoe) -- (ab) node[coef, above right] {$-$};
+%   \end{scope}
+\tikzset{
+  steppast/.style={
+    dagnode/.append style={draw=uzh@steppast, text=uzh@steppast},
+    dagedge/.append style={draw=uzh@steppast},
+    dagabsent/.append style={draw=uzh@steppast},
+    abnnode/.append style={draw=uzh@steppast, text=uzh@steppast,
+                           fill=uzh@lightgrey1},
+    hyplit/.append style={draw=uzh@steppast},
+    hypass/.append style={draw=uzh@steppast},
+    abnkey/.append style={draw=uzh@steppast},
+    abnminor/.append style={draw=uzh@steppast},
+    abnmiss/.append style={draw=uzh@steppast},
+    coef/.append style={text=uzh@steppast},
+    coefkey/.append style={text=uzh@steppast},
+    coefminor/.append style={text=uzh@steppast},
+    coefmiss/.append style={text=uzh@steppast}},
+  step fade/.code={\stepifpast{#1}{#1}{\pgfkeysalso{steppast}}{}},
+  step on/.style={visible on=<#1->, step fade=#1},
+  step keep/.code={\stepifinset{#1}{\pgfkeysalso{steppast}}{}},
+  step node/.style 2 args={visible on=<#1->, step keep={#2}},
+}
+
+% --- A table of the variables ----------------------------------------------
+% The node shape of each data type, small, for a table of the variables.
+% Thus the table tells the audience how to read the DAGs that follow.
+\tikzset{
+  icon continuous/.style={circle, minimum size=2.6mm},
+  icon binary/.style={rectangle, minimum width=3.4mm, minimum height=2.2mm},
+  icon count/.style={ellipse, minimum width=4.2mm, minimum height=2.4mm},
+  icon category/.style={diamond, aspect=1.6, minimum width=4.4mm,
+                        minimum height=2.8mm},
+}
+% \nodeicon{<step>}{<data type>}: the icon, which greys after <step>.
+% The data type is continuous, binary, count or category.
+\newcommand{\nodeicon}[2]{%
+  \tikz[baseline=-0.6ex]\node[step fade=#1, abnnode, inner sep=0pt,
+                             icon #2] {};}
+% One row of a four-column table (lccl): name, symbol, icon, data type.
+% The row comes up on step #1 and greys after it, thus the rows of one data
+% type can come up together:
+%   \varrow{2}{CSF amyloid-$\beta_{42}$ (log)}{ABETA}{continuous}
+\newcommand{\varrow}[4]{%
+  \stepcell{#1}{#1}{#2} & \stepcell{#1}{#1}{#3}
+  & \stepcell{#1}{#1}{\nodeicon{#1}{#4}} & \stepcell{#1}{#1}{#4} \\}
+
+% --- Time slices -----------------------------------------------------------
+% A DAG with one column per time slice, at x = 0, 1, 2 (slices t-1, t, t+1).
+%   lag=<width>   an arrow to the next slice, grey; the width is the strength
+%   same=<width>  an arrow inside a slice, blue, with a halo in the colour of
+%                 the band, thus the grey arrows that it crosses stay unbroken.
+%                 Draw it after the lag arrows.
+%   ts col=<c>    marks a part of slice c; ts lag marks a lag arrow. Both do
+%                 nothing, except after ts snapshot: then overlay 1 shows
+%                 slice t (column 1) only and overlay 2 the whole picture.
+%
+%   \begin{tikzpicture}[x=3cm, y=1cm, dagsmall]
+%     \node[dagnode, ts col=0] (a0) at (0,0) {$a_{t-1}$};
+%     ...
+%     \draw[lag=1.6pt] (a0) -- (a1);
+%     \draw[dagabsent, ts lag] (a1) -- (b2);
+%     \draw[same=1.3pt] (a1) -- (b1);
+%     \tsslice{2}{-1}{4.5mm}{14mm}
+%   \end{tikzpicture}
+\tikzset{
+  ts col/.style={},
+  ts lag/.style={},
+  ts snapshot/.style={
+    ts col/.code={\ifnum##1=1 \else\pgfkeysalso{visible on=<2->}\fi},
+    ts lag/.style={visible on=<2->}},
+  lag/.style={dagedge, draw=black!45, line width=#1, ts lag},
+  lag/.default=1pt,
+  same/.style={preaction={draw=uzh@imathgrey!20, line width=3.5pt, -},
+               dagedge, draw=uzh@blue, line width=#1},
+  same/.default=1pt,
+}
+
+% \tsslice{<last column>}{<y of the lowest row>}{<depth>}{<half width>}: a
+% pale band behind each slice and a time axis below the picture, with one
+% tick and one name per slice. <depth> is how far below the lowest row the
+% band goes, <half width> is half the width of a band. Put it at the end of
+% the picture; the bands go on the background layer.
+\newcommand{\tsslice}[4]{%
+  \begin{scope}[on background layer]
+    \foreach \tsc in {0,...,#1}{%
+      \fill[uzh@imathgrey!20, rounded corners=2.5mm, ts col=\tsc]
+        ([xshift=-#4, yshift=-#3]\tsc,#2)
+        rectangle ([xshift=#4, yshift=4.5mm]\tsc,0);}
+  \end{scope}
+  \foreach \tsc/\tsname in {0/{t-1}, 1/{t}, 2/{t+1}}{%
+    \ifnum\tsc>#1\relax\else
+      \node[font=\scriptsize, text=black!60, anchor=north, inner sep=0pt,
+            ts col=\tsc]
+        at ([yshift=-#3-1mm]\tsc,#2) {$\tsname$};
+      \draw[uzh@imathgrey, line width=0.8pt, ts col=\tsc]
+        ([yshift=-#3-3.6mm]\tsc,#2) -- ([yshift=-#3-5.2mm]\tsc,#2);
+    \fi}
+  \draw[uzh@imathgrey, line width=0.8pt, -{Stealth[length=2.2mm]}]
+    ([xshift=-#4, yshift=-#3-4.4mm]0,#2)
+    -- ([xshift=#4+2.5mm, yshift=-#3-4.4mm]#1,#2)
+    node[right=1mm, font=\scriptsize, text=uzh@imathgrey] {time};}

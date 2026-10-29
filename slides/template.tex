@@ -93,6 +93,28 @@
   \stepsummary{Both helpers only set the colour; you choose the overlay.}
 \end{frame}
 
+\begin{frame}{A block that builds item by item}
+  % \setsteps{3} puts the closing all-black overlay at 6: 1 the title alone,
+  % 2 and 3 the first block item by item, 4 and 5 the second block; the
+  % first block goes grey as a whole while the second one builds.
+  \setsteps{3}
+  \uncover<2->{{\stepblockrangefade{2}{3}%
+  \begin{block}{\texttt{\textbackslash stepblockrangefade\{2\}\{3\}}}
+    \begin{steplist}
+      \stepitem[2]{The block stays in full colour \ldots}
+      \stepitem[3]{\ldots while its items come up one by one}
+    \end{steplist}
+  \end{block}}}
+
+  \uncover<4->{{\stepblockrangefade{4}{5}%
+  \begin{block}{The next block}
+    \begin{steplist}
+      \stepitem[4]{The first block is now grey as a whole}
+      \stepitem[5]{The last overlay shows everything in black}
+    \end{steplist}
+  \end{block}}}
+\end{frame}
+
 \subsection{Colours}
 
 \begin{frame}{The UZH colour palette}
@@ -196,6 +218,171 @@
       \imagecard{img/profile.pdf}{Hans Muster}{PhD Student}
     \end{column}
   \end{columns}
+\end{frame}
+
+\subsection{abn data and results}
+
+\begin{frame}{A table of the variables}
+  % Step reveal: \setsteps{3} puts the closing all-black overlay at 6:
+  % 1 the lead-in alone, 2 the continuous variables, 3 the binary one,
+  % 4 the count, 5 the category, 6 everything black.
+  \setsteps{3}
+  \texttt{\textbackslash varrow} gives one row per variable, with the node
+  shape of its data type: the shape that \texttt{plot(mp)} draws.
+
+  \onslide<2->
+  \begin{center}
+    \footnotesize
+    \begin{tabular}{lccl}
+      \toprule
+      Variable & Symbol & Node & Data type \\
+      \midrule
+      \varrow{2}{Age}{AGE}{continuous}
+      \varrow{3}{Smoker}{SMOKE}{binary}
+      \varrow{2}{Blood pressure}{BP}{continuous}
+      \varrow{4}{Number of visits}{VISITS}{count}
+      \varrow{5}{Diagnosis (A / B / C)}{DX}{category}
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{A hypothesis DAG, step by step}
+  % Step reveal: \setsteps{1} puts the closing all-black overlay at 4. Step
+  % k (1 to 3) brings row k of the table with its nodes and arrows. What came
+  % before goes grey, except a node at an end of an arrow of step k.
+  \setsteps{1}
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[x=1.3cm, y=1.0cm]
+        % step node={first step}{steps in black}
+        \node[step node={1}{1,3},   abngauss] (age) at (0,0)      {AGE};
+        \node[step node={1}{1,2,3}, abngauss] (bp)  at (1.3,-1.4) {BP};
+        \node[step node={2}{2},     abnbin]   (smk) at (2.6,0)    {SMOKE};
+        \node[step node={3}{3},     abnmult]  (dx)  at (1.3,-2.8) {DX};
+        \begin{scope}[step on=1]
+          \draw[hyplit] (age) -- (bp) node[coef, below left] {$+$};
+        \end{scope}
+        \begin{scope}[step on=2]
+          \draw[hypass] (smk) -- (bp) node[coef, below right] {$+$};
+        \end{scope}
+        \begin{scope}[step on=3]
+          \draw[hypass] (bp)  -- (dx) node[coef, right=2pt] {$+$};
+          \draw[hypass] (age) to[out=-100, in=180]
+            node[coef, below left] {$+$} (dx);
+        \end{scope}
+      \end{tikzpicture}
+
+      {\raggedright\scriptsize Solid: literature. Dashed: assumption.\\
+      Sign: direction of the effect.\par}
+    \end{column}
+    \begin{column}{0.51\textwidth}
+      \scriptsize
+      \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}ll@{}}
+        \toprule
+        Arrows & Source \\
+        \midrule
+        \stepcell{1}{1}{AGE $\to$ BP} & \stepcell{1}{1}{literature} \\[3pt]
+        \stepcell{2}{2}{SMOKE $\to$ BP} & \stepcell{2}{2}{assumption} \\[3pt]
+        \stepcell{3}{3}{\{AGE, BP\} $\to$ DX} & \stepcell{3}{3}{assumption} \\
+        \bottomrule
+      \end{tabular*}
+
+      \medskip
+      Each \texttt{step node} names its first step and the steps on which
+      it stays black; \texttt{step on} brings a scope of arrows.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{A fitted DAG with its coefficients}
+  % Step reveal, five overlays; nothing fades on this frame:
+  %   1 the arrows of the hypothesis, the sign of each coefficient only;
+  %   2 in berry, the arrow abn misses (not in the short PDF: handout:0);
+  %   3 the extra arrow abn adds, in grey;
+  %   4 the numbers on the arrows (\cf);
+  %   5 the table, and its coefficients in bold.
+  \begin{columns}[T]
+    \begin{column}{0.45\textwidth}
+      \centering
+      \begin{tikzpicture}[x=1.3cm, y=1.0cm,
+          % the coefficient of an arrow that is also in the table
+          tabcoef/.style={alt=<5->{coefkey}{coef}}]
+        \node[abngauss] (age) at (0,0)      {AGE};
+        \node[abngauss] (bp)  at (1.3,-1.4) {BP};
+        \node[abnbin]   (smk) at (2.6,0)    {SMOKE};
+        \node[abnmult]  (dx)  at (1.3,-2.8) {DX};
+        \node[abnpois, visible on=<3->] (vis) at (2.6,-2.8) {VISITS};
+        % width = strength
+        \draw[abnkey=1.8pt] (age) -- (bp)
+          node[tabcoef, below left] {\cf{$+$}{$0.62$}};
+        \draw[abnkey=1.0pt] (smk) -- (bp)
+          node[coef, below right] {\cf{$+$}{$0.31$}};
+        \draw[abnkey=1.4pt] (bp)  -- (dx)
+          node[tabcoef, right=2pt] {B \cf{$+$}{$1.20$}};
+        \only<2| handout:0>{\draw[abnmiss, dashed] (age) to[out=-100, in=180] (dx);}
+        \draw[abnminor, visible on=<3->] (smk) -- (vis)
+          node[coefminor, right] {\cf{$+$}{$0.08$}};
+      \end{tikzpicture}
+
+      {\raggedright\scriptsize \textcolor{uzh@blue}{Blue}: arrow of the
+      hypothesis.
+      \alt<2| handout:0>{\textcolor{uzh@berry}{Red}: missed.}{%
+      \uncover<3->{\textcolor{black!50}{Grey}: extra arrow.}}\par}
+    \end{column}
+    \begin{column}{0.51\textwidth}
+      \scriptsize
+      \uncover<4->{\texttt{\textbackslash cf} shows the sign first, the
+      number from overlay 4 on. The numbers are made up.}
+
+      \smallskip
+      \onslide<5->
+      \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lr@{}}
+        \toprule
+        Arrow & $\hat\beta$ (SE) \\
+        \midrule
+        AGE $\to$ BP \gtype{Gaussian $\to$ Gaussian} & $0.62$ (0.03) \\
+        \readas{$0.62$ SD of BP per SD of AGE} \\[3pt]
+        BP $\to$ DX \gtype{Gaussian $\to$ multinomial} & $1.20$ (0.10) \\
+        \readas{log-odds of B vs.\ A per SD of BP} \\
+        \bottomrule
+      \end{tabular*}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Time slices}
+  % Two overlays: 1 the slice t alone (ts snapshot), 2 the whole picture.
+  \texttt{\textbackslash tsslice} draws the bands and the time axis.
+  With \texttt{ts snapshot}, the slice $t$ comes first.
+
+  \vfill
+  \centering
+  \begin{tikzpicture}[x=3cm, y=1.2cm, dagsmall, ts snapshot]
+    \foreach \c/\t in {0/{t-1}, 1/{t}, 2/{t+1}}{%
+      \node[dagnode, ts col=\c] (a\c) at (\c,0)  {$a_{\t}$};
+      \node[dagnode, ts col=\c] (b\c) at (\c,-1) {$b_{\t}$};}
+    % one slice later, width = strength
+    \draw[lag=1.6pt] (a0) -- (a1);
+    \draw[lag=1.6pt] (a1) -- (a2);
+    \draw[lag=0.8pt] (b0) -- (b1);
+    \draw[lag=0.8pt] (b1) -- (b2);
+    \draw[lag=1.2pt] (a0) -- (b1);
+    \draw[dagabsent, ts lag] (a1) -- (b2);
+    % same slice, drawn after the lag arrows; ts col is on a scope, because
+    % the halo does not take the opacity of its path
+    \foreach \c in {0,1,2}{%
+      \begin{scope}[ts col=\c]
+        \draw[same=1.3pt] (a\c) -- (b\c);
+      \end{scope}}
+    \tsslice{2}{-1}{4.5mm}{12mm}
+  \end{tikzpicture}
+
+  \vspace{2pt}
+  {\scriptsize \textcolor{uzh@blue}{Blue}: same slice;
+  \textcolor{black!50}{grey}: one slice later;
+  \textcolor{uzh@berry}{dashed}: absent. Line width: strength.\par}
 \end{frame}
 
 

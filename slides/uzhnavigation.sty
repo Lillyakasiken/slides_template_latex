@@ -426,22 +426,29 @@
   \setbeamercolor{itemize item}{parent=item}%
 }
 
+% The grey block colours of a past step.
+\newcommand{\uzh@stepblockpast}{%
+  \setbeamercolor{block title}{bg=uzh@lightgrey2,fg=uzh@steppast}%
+  \setbeamercolor{block body}{bg=uzh@lightgrey1,fg=uzh@steppast}%
+  \setbeamercolor{itemize item}{fg=uzh@steppast}%
+}
+
 % Fade rule for a beamer block: full colour on its own overlay #1, grey while a
 % later step is current, full colour again on the closing all-black overlay.
 % Call it inside the group that holds the block.
-\newcommand{\stepblockfade}[1]{%
-  \ifnum\beamer@slideinframe=#1\relax
-    \uzh@stepblockreset
-  \else
-    \ifnum\beamer@slideinframe<\value{uzh@stepfinal}\relax
-      \setbeamercolor{block title}{bg=uzh@lightgrey2,fg=uzh@steppast}%
-      \setbeamercolor{block body}{bg=uzh@lightgrey1,fg=uzh@steppast}%
-      \setbeamercolor{itemize item}{fg=uzh@steppast}%
-    \else
-      \uzh@stepblockreset
-    \fi
-  \fi
-}
+\newcommand{\stepblockfade}[1]{\stepblockrangefade{#1}{#1}}
+
+% Fade rule for a block that stays current over a RANGE of overlays, from #1
+% to #2 -- the block counterpart of \steprangefade. Use it for a block whose
+% items come up one by one: the block stays in full colour while it builds,
+% and goes grey as a whole when the next block starts.
+%
+%   \uncover<2->{{\stepblockrangefade{2}{4}%
+%   \begin{block}{First block}
+%     \begin{steplist} \stepitem[2]{...} \stepitem[3]{...} ... \end{steplist}
+%   \end{block}}}
+\newcommand{\stepblockrangefade}[2]{%
+  \stepifpast{#1}{#2}{\uzh@stepblockpast}{\uzh@stepblockreset}}
 
 % Fade rule for a plain run of text: same three cases as \stepblockfade, but it
 % emits a \color, so put it at the start of the group that holds the text.
@@ -497,21 +504,34 @@
 % work, for example: \stepsetfade{4,6}. It works in math mode as well.
 %
 % Requires \setsteps at the top of the frame, exactly as \steptextfade does.
-\newif\ifuzh@stepmatch
 \newcommand{\stepsetfade}[1]{%
+  \stepifinset{#1}{\color{uzh@steppast}}{\color{uzh@stepcurrent}}}
+
+% The rule behind \stepsetfade, as a branch instead of a colour: #2 is used
+% while the part is past (grey), #3 while it is current (black). It is to
+% \stepsetfade what \stepifpast is to \steprangefade -- for a TikZ style, for
+% example (see `step keep' in uzhdag.sty).
+\newif\ifuzh@stepmatch
+\newcommand{\stepifinset}[3]{%
   \uzh@stepmatchfalse
   \@for\uzh@stepsetx:=#1\do{%
     \ifnum\beamer@slideinframe=\uzh@stepsetx\relax\uzh@stepmatchtrue\fi}%
   \ifuzh@stepmatch
-    \color{uzh@stepcurrent}%
+    #3%
   \else
     \ifnum\beamer@slideinframe<\value{uzh@stepfinal}\relax
-      \color{uzh@steppast}%
+      #2%
     \else
-      \color{uzh@stepcurrent}%
+      #3%
     \fi
   \fi
 }
+
+% A table cell that comes up on overlay #1, stays black through overlay #2
+% and greys after that, until the closing all-black overlay. #3 is the cell.
+% It reveals AND fades, thus one row of a table can come up per step:
+%   \stepcell{2}{2}{ABETA} & \stepcell{2}{2}{continuous} \\
+\newcommand{\stepcell}[3]{\uncover<#1->{{\steprangefade{#1}{#2}#3}}}
 
 % Hold a part at full colour on every overlay it is on. Use it for an object
 % that the later steps read FROM -- a figure, a map, a table -- which must stay
@@ -533,10 +553,9 @@
   \renewcommand{\uzh@stepcol}[1]{\color{uzh@stepcurrent}}%
   \renewcommand{\uzh@resolvenotecolor}{%
     \colorlet{uzh@stepcolor}{uzh@stepcurrent}}%
-  \renewcommand{\stepblockfade}[1]{\uzh@stepblockreset}%
   \renewcommand{\steprangefade}[2]{\color{uzh@stepcurrent}}%
-  \renewcommand{\stepsetfade}[1]{\color{uzh@stepcurrent}}%
   \renewcommand{\stepifpast}[4]{#4}%
+  \renewcommand{\stepifinset}[3]{#3}%
   \renewcommand{\stepsummary}[1]{{\color{uzh@stepcurrent}#1}}%
 }
 
